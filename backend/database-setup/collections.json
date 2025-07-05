@@ -1,0 +1,32 @@
+[
+  {
+    "name": "John Doe",
+    "email": "john@example.com",
+    "password": "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4J/HS.iK2O",
+    "role": "user",
+    "isActive": true,
+    "lastLogin": "2024-01-15T10:30:00.000Z",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-15T10:30:00.000Z"
+  },
+  {
+    "name": "Jane Smith",
+    "email": "jane@example.com",
+    "password": "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4J/HS.iK2O",
+    "role": "user",
+    "isActive": true,
+    "lastLogin": "2024-01-14T15:45:00.000Z",
+    "createdAt": "2024-01-02T00:00:00.000Z",
+    "updatedAt": "2024-01-14T15:45:00.000Z"
+  },
+  {
+    "name": "Admin User",
+    "email": "admin@easypdf.com",
+    "password": "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4J/HS.iK2O",
+    "role": "admin",
+    "isActive": true,
+    "lastLogin": "2024-01-15T09:00:00.000Z",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-15T09:00:00.000Z"
+  }
+] 

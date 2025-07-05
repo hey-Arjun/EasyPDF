@@ -1,0 +1,35 @@
+[
+  {
+    "userId": "507f1f77bcf86cd799439011",
+    "originalName": "document1.pdf",
+    "storedName": "20240115_103000_document1.pdf",
+    "filePath": "/uploads/20240115_103000_document1.pdf",
+    "fileSize": 1048576,
+    "mimeType": "application/pdf",
+    "uploadDate": "2024-01-15T10:30:00.000Z",
+    "isProcessed": true,
+    "processingJobId": "507f1f77bcf86cd799439011"
+  },
+  {
+    "userId": "507f1f77bcf86cd799439012",
+    "originalName": "image1.jpg",
+    "storedName": "20240115_110000_image1.jpg",
+    "filePath": "/uploads/20240115_110000_image1.jpg",
+    "fileSize": 512000,
+    "mimeType": "image/jpeg",
+    "uploadDate": "2024-01-15T11:00:00.000Z",
+    "isProcessed": false
+  },
+  {
+    "userId": "507f1f77bcf86cd799439013",
+    "originalName": "merged_output.pdf",
+    "storedName": "20240115_103230_merged_output.pdf",
+    "filePath": "/downloads/20240115_103230_merged_output.pdf",
+    "fileSize": 2048576,
+    "mimeType": "application/pdf",
+    "uploadDate": "2024-01-15T10:32:30.000Z",
+    "isProcessed": true,
+    "processingJobId": "507f1f77bcf86cd799439011",
+    "isOutputFile": true
+  }
+] 
