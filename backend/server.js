@@ -13,6 +13,9 @@ const connectDB = require('./config/database');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Trust proxy for rate limiting (fixes X-Forwarded-For header issue)
+app.set('trust proxy', 1);
+
 // Connect to MongoDB
 connectDB().catch(err => {
   console.error('Failed to connect to MongoDB:', err);
@@ -48,6 +51,12 @@ app.use(compression());
 
 // Logging middleware
 app.use(morgan('combined'));
+
+// Add request logging for debugging
+app.use((req, res, next) => {
+  console.log(`🌐 ${req.method} ${req.path} - ${req.get('User-Agent')?.substring(0, 50) || 'Unknown'}`);
+  next();
+});
 
 // Body parsing middleware
 app.use(express.json({ limit: '50mb' }));

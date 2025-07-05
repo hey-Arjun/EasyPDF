@@ -24,9 +24,11 @@ module.exports = {
   
   // PDF processing settings
   pdfCompressionLevels: {
-    extreme: { quality: 0.3, dpi: 72 },
-    recommended: { quality: 0.6, dpi: 150 },
-    less: { quality: 0.8, dpi: 300 }
+    extreme: { quality: 0.2, dpi: 72, name: 'Extreme (Smallest Size)' },
+    high: { quality: 0.4, dpi: 96, name: 'High (Small Size)' },
+    recommended: { quality: 0.6, dpi: 150, name: 'Recommended (Balanced)' },
+    low: { quality: 0.8, dpi: 200, name: 'Low (Better Quality)' },
+    minimal: { quality: 0.9, dpi: 300, name: 'Minimal (Best Quality)' }
   },
   
   // Supported file types

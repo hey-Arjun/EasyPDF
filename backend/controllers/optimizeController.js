@@ -3,65 +3,116 @@ const fs = require('fs').promises;
 const path = require('path');
 const Tesseract = require('tesseract.js');
 const config = require('../config/config');
+const pdfParse = require('pdf-parse');
+const imagemin = require('imagemin');
+const imageminMozjpeg = require('imagemin-mozjpeg');
+const imageminPngquant = require('imagemin-pngquant');
+const { exec } = require('child_process');
 
 const optimizeController = {
-  // Compress PDF
+  // Compress PDF using Ghostscript with intelligent compression
   compressPdf: async (req, res) => {
     try {
       if (!req.file) {
-        return res.status(400).json({
-          success: false,
-          message: 'No file uploaded'
-        });
+        return res.status(400).json({ success: false, message: 'No file uploaded' });
+      }
+      const inputPath = req.file.path;
+      const outputPath = path.join(config.downloadPath, `compressed_${Date.now()}.pdf`);
+
+      // Get compression level and percentage
+      const { compressionLevel = 'recommended', compressionValue = 30 } = req.body;
+      
+      const percentage = parseInt(compressionValue) || 30;
+      
+      // Much more aggressive compression strategy based on percentage
+      let gsCommand;
+      
+      if (percentage >= 80) {
+        // Extreme compression (80-100%) - very aggressive settings for maximum size reduction
+        gsCommand = `gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/screen -dColorImageDownsampleType=/Subsample -dColorImageResolution=24 -dGrayImageDownsampleType=/Subsample -dGrayImageResolution=24 -dMonoImageDownsampleType=/Subsample -dMonoImageResolution=24 -dEmbedAllFonts=false -dSubsetFonts=true -dOptimize=true -dCompressFonts=true -dDownsampleColorImages=true -dDownsampleGrayImages=true -dDownsampleMonoImages=true -dColorImageFilter=/DCTEncode -dGrayImageFilter=/DCTEncode -dMonoImageFilter=/CCITTFaxEncode -dJPEGQuality=5 -dNOPAUSE -dQUIET -dBATCH -sOutputFile="${outputPath}" "${inputPath}"`;
+      } else if (percentage >= 60) {
+        // High compression (60-79%) - aggressive settings
+        gsCommand = `gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/screen -dColorImageDownsampleType=/Subsample -dColorImageResolution=36 -dGrayImageDownsampleType=/Subsample -dGrayImageResolution=36 -dMonoImageDownsampleType=/Subsample -dMonoImageResolution=36 -dEmbedAllFonts=false -dSubsetFonts=true -dOptimize=true -dCompressFonts=true -dDownsampleColorImages=true -dDownsampleGrayImages=true -dDownsampleMonoImages=true -dColorImageFilter=/DCTEncode -dGrayImageFilter=/DCTEncode -dMonoImageFilter=/CCITTFaxEncode -dJPEGQuality=10 -dNOPAUSE -dQUIET -dBATCH -sOutputFile="${outputPath}" "${inputPath}"`;
+      } else if (percentage >= 40) {
+        // Medium compression (40-59%) - moderate settings
+        gsCommand = `gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/ebook -dColorImageDownsampleType=/Bicubic -dColorImageResolution=150 -dGrayImageDownsampleType=/Bicubic -dGrayImageResolution=150 -dMonoImageDownsampleType=/Subsample -dMonoImageResolution=150 -dEmbedAllFonts=false -dSubsetFonts=true -dOptimize=true -dCompressFonts=true -dDownsampleColorImages=true -dDownsampleGrayImages=true -dDownsampleMonoImages=true -dColorImageFilter=/DCTEncode -dGrayImageFilter=/DCTEncode -dMonoImageFilter=/CCITTFaxEncode -dJPEGQuality=20 -dNOPAUSE -dQUIET -dBATCH -sOutputFile="${outputPath}" "${inputPath}"`;
+      } else {
+        // Light compression (1-39%) - conservative settings
+        gsCommand = `gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/printer -dColorImageDownsampleType=/Bicubic -dColorImageResolution=300 -dGrayImageDownsampleType=/Bicubic -dGrayImageResolution=300 -dMonoImageDownsampleType=/Subsample -dMonoImageResolution=300 -dEmbedAllFonts=true -dSubsetFonts=true -dOptimize=true -dCompressFonts=true -dDownsampleColorImages=true -dDownsampleGrayImages=true -dDownsampleMonoImages=true -dColorImageFilter=/DCTEncode -dGrayImageFilter=/DCTEncode -dMonoImageFilter=/CCITTFaxEncode -dJPEGQuality=40 -dNOPAUSE -dQUIET -dBATCH -sOutputFile="${outputPath}" "${inputPath}"`;
       }
 
-      const { compressionLevel = 'recommended' } = req.body;
-      const settings = config.pdfCompressionLevels[compressionLevel] || config.pdfCompressionLevels.recommended;
+      // Try compression with intelligent fallback
+      const tryCompression = async (command, attempt = 1) => {
+        return new Promise((resolve, reject) => {
+          exec(command, async (error, stdout, stderr) => {
+            if (error) {
+              console.error(`Ghostscript attempt ${attempt} error:`, error, stderr);
+              reject(error);
+              return;
+            }
+            
+            const originalSize = (await fs.stat(inputPath)).size;
+            const compressedSize = (await fs.stat(outputPath)).size;
+            const actualCompressionRatio = ((originalSize - compressedSize) / originalSize * 100).toFixed(2);
+            
+            // If compression made file larger and we haven't tried too many times, try a different approach
+            if (compressedSize > originalSize && attempt < 3) {
+              console.log(`Attempt ${attempt}: File got larger, trying alternative compression...`);
+              
+              // Try more aggressive compression for next attempt
+              let fallbackCommand;
+              if (attempt === 1) {
+                // Try with extremely aggressive settings
+                fallbackCommand = `gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/screen -dColorImageDownsampleType=/Subsample -dColorImageResolution=24 -dGrayImageDownsampleType=/Subsample -dGrayImageResolution=24 -dMonoImageDownsampleType=/Subsample -dMonoImageResolution=24 -dEmbedAllFonts=false -dSubsetFonts=true -dOptimize=true -dCompressFonts=true -dDownsampleColorImages=true -dDownsampleGrayImages=true -dDownsampleMonoImages=true -dColorImageFilter=/DCTEncode -dGrayImageFilter=/DCTEncode -dMonoImageFilter=/CCITTFaxEncode -dJPEGQuality=5 -dNOPAUSE -dQUIET -dBATCH -sOutputFile="${outputPath}" "${inputPath}"`;
+              } else {
+                // Try with different output path for last attempt - maximum compression
+                const fallbackOutputPath = path.join(config.downloadPath, `compressed_fallback_${Date.now()}.pdf`);
+                fallbackCommand = `gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/screen -dColorImageDownsampleType=/Subsample -dColorImageResolution=18 -dGrayImageDownsampleType=/Subsample -dGrayImageResolution=18 -dMonoImageDownsampleType=/Subsample -dMonoImageResolution=18 -dEmbedAllFonts=false -dSubsetFonts=true -dOptimize=true -dCompressFonts=true -dDownsampleColorImages=true -dDownsampleGrayImages=true -dDownsampleMonoImages=true -dColorImageFilter=/DCTEncode -dGrayImageFilter=/DCTEncode -dMonoImageFilter=/CCITTFaxEncode -dJPEGQuality=1 -dNOPAUSE -dQUIET -dBATCH -sOutputFile="${fallbackOutputPath}" "${inputPath}"`;
+                
+                // Update output path for response
+                outputPath = fallbackOutputPath;
+              }
+              
+              try {
+                const result = await tryCompression(fallbackCommand, attempt + 1);
+                resolve(result);
+              } catch (fallbackError) {
+                reject(fallbackError);
+              }
+            } else {
+              resolve({
+                originalSize,
+                compressedSize,
+                actualCompressionRatio,
+                outputPath
+              });
+            }
+          });
+        });
+      };
 
-      const pdfBytes = await fs.readFile(req.file.path);
-      const pdf = await PDFDocument.load(pdfBytes);
-
-      // Apply compression settings
-      const compressedPdf = await PDFDocument.create();
-      const pages = await compressedPdf.copyPages(pdf, pdf.getPageIndices());
-      pages.forEach((page) => compressedPdf.addPage(page));
-
-      // Save with compression
-      const compressedPdfBytes = await compressedPdf.save({
-        useObjectStreams: true,
-        addDefaultPage: false,
-        objectsPerTick: 20,
-        updateFieldAppearances: false,
-        throwOnInvalidObject: false
-      });
-
-      const outputPath = path.join(config.downloadPath, `compressed_${Date.now()}.pdf`);
-      await fs.writeFile(outputPath, compressedPdfBytes);
-
-      // Get file sizes for comparison
-      const originalSize = pdfBytes.length;
-      const compressedSize = compressedPdfBytes.length;
-      const compressionRatio = ((originalSize - compressedSize) / originalSize * 100).toFixed(2);
-
-      res.status(200).json({
-        success: true,
-        message: 'PDF compressed successfully',
-        data: {
-          downloadUrl: `/api/optimize/download/${path.basename(outputPath)}`,
-          fileName: path.basename(outputPath),
-          originalSize: formatFileSize(originalSize),
-          compressedSize: formatFileSize(compressedSize),
-          compressionRatio: `${compressionRatio}%`,
-          compressionLevel,
-          jobId: 'temp-job-id'
-        }
-      });
+      try {
+        const result = await tryCompression(gsCommand);
+        
+        res.status(200).json({
+          success: true,
+          message: 'PDF compressed successfully',
+          data: {
+            downloadUrl: `/api/optimize/download/${path.basename(result.outputPath)}`,
+            fileName: path.basename(result.outputPath),
+            originalSizeBytes: result.originalSize,
+            compressedSizeBytes: result.compressedSize,
+            compressionRatio: `${percentage}%`,
+            actualCompressionRatio: `${result.actualCompressionRatio}%`
+          }
+        });
+      } catch (error) {
+        console.error('All compression attempts failed:', error);
+        res.status(500).json({ success: false, message: 'Compression failed after multiple attempts' });
+      }
     } catch (error) {
       console.error('Compress PDF error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Error compressing PDF'
-      });
+      res.status(500).json({ success: false, message: 'Error compressing PDF' });
     }
   },
 
@@ -105,13 +156,36 @@ const optimizeController = {
       const outputPath = path.join(config.downloadPath, `protected_${Date.now()}.pdf`);
       await fs.writeFile(outputPath, protectedPdfBytes);
 
+      let jobId = null;
+      // Save job to database if user is logged in
+      if (req.user && req.user.id) {
+        try {
+          const Job = require('../models/Job');
+          const job = new Job({
+            userId: req.user.id,
+            type: 'protect_pdf',
+            fileName: path.basename(outputPath),
+            originalFiles: [req.file.originalname],
+            status: 'completed',
+            completedAt: new Date()
+          });
+          await job.save();
+          jobId = job._id;
+          console.log('Job saved for logged-in user:', jobId);
+        } catch (error) {
+          console.error('Error saving job:', error);
+        }
+      } else {
+        console.log('No user logged in - job not saved to database');
+      }
+
       res.status(200).json({
         success: true,
         message: 'PDF protected successfully',
         data: {
           downloadUrl: `/api/optimize/download/${path.basename(outputPath)}`,
           fileName: path.basename(outputPath),
-          jobId: 'temp-job-id'
+          jobId: jobId
         }
       });
     } catch (error) {
@@ -159,13 +233,36 @@ const optimizeController = {
       const outputPath = path.join(config.downloadPath, `repaired_${Date.now()}.pdf`);
       await fs.writeFile(outputPath, repairedPdfBytes);
 
+      let jobId = null;
+      // Save job to database if user is logged in
+      if (req.user && req.user.id) {
+        try {
+          const Job = require('../models/Job');
+          const job = new Job({
+            userId: req.user.id,
+            type: 'repair_pdf',
+            fileName: path.basename(outputPath),
+            originalFiles: [req.file.originalname],
+            status: 'completed',
+            completedAt: new Date()
+          });
+          await job.save();
+          jobId = job._id;
+          console.log('Job saved for logged-in user:', jobId);
+        } catch (error) {
+          console.error('Error saving job:', error);
+        }
+      } else {
+        console.log('No user logged in - job not saved to database');
+      }
+
       res.status(200).json({
         success: true,
         message: 'PDF repaired successfully',
         data: {
           downloadUrl: `/api/optimize/download/${path.basename(outputPath)}`,
           fileName: path.basename(outputPath),
-          jobId: 'temp-job-id'
+          jobId: jobId
         }
       });
     } catch (error) {
@@ -220,6 +317,29 @@ const optimizeController = {
       const outputPath = path.join(config.downloadPath, `ocr_${Date.now()}.pdf`);
       await fs.writeFile(outputPath, ocrPdfBytes);
 
+      let jobId = null;
+      // Save job to database if user is logged in
+      if (req.user && req.user.id) {
+        try {
+          const Job = require('../models/Job');
+          const job = new Job({
+            userId: req.user.id,
+            type: 'ocr_pdf',
+            fileName: path.basename(outputPath),
+            originalFiles: [req.file.originalname],
+            status: 'completed',
+            completedAt: new Date()
+          });
+          await job.save();
+          jobId = job._id;
+          console.log('Job saved for logged-in user:', jobId);
+        } catch (error) {
+          console.error('Error saving job:', error);
+        }
+      } else {
+        console.log('No user logged in - job not saved to database');
+      }
+
       res.status(200).json({
         success: true,
         message: 'OCR processing completed',
@@ -228,7 +348,7 @@ const optimizeController = {
           fileName: path.basename(outputPath),
           pageCount,
           language,
-          jobId: 'temp-job-id'
+          jobId: jobId
         }
       });
     } catch (error) {

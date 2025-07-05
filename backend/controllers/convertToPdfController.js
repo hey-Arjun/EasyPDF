@@ -4,14 +4,29 @@ const path = require('path');
 const puppeteer = require('puppeteer');
 const mammoth = require('mammoth');
 const XLSX = require('xlsx');
+const libre = require('libreoffice-convert');
+const { promisify } = require('util');
 const config = require('../config/config');
 const Job = require('../models/Job');
+
+// Convert libre.convert to use promises
+const libreConvert = promisify(libre.convert);
 
 const convertToPdfController = {
   // Convert JPG/Images to PDF
   jpgToPdf: async (req, res) => {
+    console.log('=== JPG to PDF Request Received ===');
+    console.log('Request method:', req.method);
+    console.log('Request headers:', req.headers);
+    console.log('Request body keys:', Object.keys(req.body || {}));
+    console.log('Request files:', req.files ? req.files.length : 'No files');
+    console.log('Request file details:', req.files ? req.files.map(f => ({ name: f.originalname, size: f.size, mimetype: f.mimetype })) : 'No files');
+    console.log('User:', req.user ? req.user.id : 'No user');
+    console.log('=====================================');
+
     try {
       if (!req.files || req.files.length === 0) {
+        console.log('No files uploaded - returning error');
         return res.status(400).json({
           success: false,
           message: 'No images uploaded'
@@ -190,33 +205,63 @@ const convertToPdfController = {
         });
       }
 
-      // For PowerPoint conversion, we'll create a placeholder PDF
-      // In production, you'd use a library like libreoffice or cloudconvert API
-      const pdf = await PDFDocument.create();
-      const page = pdf.addPage([612, 792]); // A4 size
+      let pdfBuffer;
 
-      // Add a placeholder message
-      page.drawText('PowerPoint to PDF conversion', {
-        x: 50,
-        y: 700,
-        size: 20
-      });
+      try {
+        // Try LibreOffice conversion first
+        const inputBuffer = await fs.readFile(req.file.path);
+        pdfBuffer = await libreConvert(inputBuffer, '.pdf', undefined);
+      } catch (libreError) {
+        console.log('LibreOffice conversion failed, using fallback method:', libreError.message);
+        
+        // Fallback: Create a PDF with file information
+        const pdf = await PDFDocument.create();
+        const page = pdf.addPage([612, 792]); // A4 size
 
-      page.drawText('This is a placeholder for PowerPoint conversion.', {
-        x: 50,
-        y: 650,
-        size: 12
-      });
+        // Add title
+        page.drawText('PowerPoint to PDF Conversion', {
+          x: 50,
+          y: 750,
+          size: 20
+        });
 
-      page.drawText(`Original file: ${req.file.originalname}`, {
-        x: 50,
-        y: 600,
-        size: 10
-      });
+        // Add file information
+        page.drawText(`Original file: ${req.file.originalname}`, {
+          x: 50,
+          y: 700,
+          size: 12
+        });
 
-      const pdfBytes = await pdf.save();
+        page.drawText(`File size: ${(req.file.size / 1024 / 1024).toFixed(2)} MB`, {
+          x: 50,
+          y: 670,
+          size: 12
+        });
+
+        page.drawText(`File type: ${req.file.mimetype}`, {
+          x: 50,
+          y: 640,
+          size: 12
+        });
+
+        page.drawText('Note: This is a placeholder PDF. For full conversion,', {
+          x: 50,
+          y: 600,
+          size: 10
+        });
+
+        page.drawText('LibreOffice needs to be installed on the server.', {
+          x: 50,
+          y: 580,
+          size: 10
+        });
+
+        pdfBuffer = await pdf.save();
+      }
+      
+      // Save the converted PDF
       const outputPath = path.join(config.downloadPath, `powerpoint_to_pdf_${Date.now()}.pdf`);
-      await fs.writeFile(outputPath, pdfBytes);
+      await fs.writeFile(outputPath, pdfBuffer);
 
       const fileName = path.basename(outputPath);
       let jobId = null;
@@ -280,43 +325,63 @@ const convertToPdfController = {
         });
       }
 
-      // Read Excel file
-      const workbook = XLSX.readFile(req.file.path);
-      const sheetNames = workbook.SheetNames;
-      const firstSheet = workbook.Sheets[sheetNames[0]];
-      const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+      let pdfBuffer;
 
-      // Create PDF with table data
-      const pdf = await PDFDocument.create();
-      const page = pdf.addPage([612, 792]); // A4 size
-
-      // Add title
-      page.drawText('Excel to PDF Conversion', {
-        x: 50,
-        y: 750,
-        size: 16
-      });
-
-      // Add table data (simplified)
-      let yPosition = 700;
-      const lineHeight = 15;
-
-      for (let i = 0; i < Math.min(30, jsonData.length); i++) { // Limit to first 30 rows
-        if (yPosition < 50) break; // Stop if page is full
+      try {
+        // Try LibreOffice conversion first
+        const inputBuffer = await fs.readFile(req.file.path);
+        pdfBuffer = await libreConvert(inputBuffer, '.pdf', undefined);
+      } catch (libreError) {
+        console.log('LibreOffice conversion failed, using fallback method:', libreError.message);
         
-        const row = jsonData[i];
-        const rowText = Array.isArray(row) ? row.join(' | ') : JSON.stringify(row);
-        page.drawText(rowText.substring(0, 80), { // Limit text length
-          x: 50,
-          y: yPosition,
-          size: 8
-        });
-        yPosition -= lineHeight;
-      }
+        // Fallback: Create a PDF with file information
+        const pdf = await PDFDocument.create();
+        const page = pdf.addPage([612, 792]); // A4 size
 
-      const pdfBytes = await pdf.save();
+        // Add title
+        page.drawText('Excel to PDF Conversion', {
+          x: 50,
+          y: 750,
+          size: 20
+        });
+
+        // Add file information
+        page.drawText(`Original file: ${req.file.originalname}`, {
+          x: 50,
+          y: 700,
+          size: 12
+        });
+
+        page.drawText(`File size: ${(req.file.size / 1024 / 1024).toFixed(2)} MB`, {
+          x: 50,
+          y: 670,
+          size: 12
+        });
+
+        page.drawText(`File type: ${req.file.mimetype}`, {
+          x: 50,
+          y: 640,
+          size: 12
+        });
+
+        page.drawText('Note: This is a placeholder PDF. For full conversion,', {
+          x: 50,
+          y: 600,
+          size: 10
+        });
+
+        page.drawText('LibreOffice needs to be installed on the server.', {
+          x: 50,
+          y: 580,
+          size: 10
+        });
+
+        pdfBuffer = await pdf.save();
+      }
+      
+      // Save the converted PDF
       const outputPath = path.join(config.downloadPath, `excel_to_pdf_${Date.now()}.pdf`);
-      await fs.writeFile(outputPath, pdfBytes);
+      await fs.writeFile(outputPath, pdfBuffer);
 
       const fileName = path.basename(outputPath);
       let jobId = null;
@@ -349,8 +414,7 @@ const convertToPdfController = {
           downloadUrl: `/api/convert-to-pdf/download/${fileName}`,
           fileName: fileName,
           jobId: jobId,
-          originalFile: req.file.originalname,
-          sheetCount: sheetNames.length
+          originalFile: req.file.originalname
         }
       });
     } catch (error) {

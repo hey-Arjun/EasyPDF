@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const convertFromPdfController = require('../controllers/convertFromPdfController');
 const { upload } = require('../middleware/upload');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, optionalAuth } = require('../middleware/auth');
 const fs = require('fs').promises;
 const path = require('path');
 const config = require('../config/config');
@@ -60,10 +60,10 @@ router.get('/download/:filename', authenticateToken, async (req, res) => {
 });
 
 // CONVERT FROM PDF routes
-router.post('/pdf-to-jpg', authenticateToken, upload.single('file'), convertFromPdfController.pdfToJpg);
-router.post('/pdf-to-word', authenticateToken, upload.single('file'), convertFromPdfController.pdfToWord);
-router.post('/pdf-to-powerpoint', authenticateToken, upload.single('file'), convertFromPdfController.pdfToPowerpoint);
-router.post('/pdf-to-excel', authenticateToken, upload.single('file'), convertFromPdfController.pdfToExcel);
-router.post('/pdf-to-pdfa', authenticateToken, upload.single('file'), convertFromPdfController.pdfToPdfA);
+router.post('/pdf-to-jpg', optionalAuth, upload.single('file'), convertFromPdfController.pdfToJpg);
+router.post('/pdf-to-word', optionalAuth, upload.single('file'), convertFromPdfController.pdfToWord);
+router.post('/pdf-to-powerpoint', optionalAuth, upload.single('file'), convertFromPdfController.pdfToPowerpoint);
+router.post('/pdf-to-excel', optionalAuth, upload.single('file'), convertFromPdfController.pdfToExcel);
+router.post('/pdf-to-pdfa', optionalAuth, upload.single('file'), convertFromPdfController.pdfToPdfA);
 
 module.exports = router; 

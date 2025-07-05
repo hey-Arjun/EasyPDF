@@ -1,109 +1,153 @@
 .compression-options {
-  margin-bottom: 30px;
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
 }
 
 .compression-options h3 {
-  font-size: 1.2rem;
-  font-weight: 600;
+  margin: 0 0 20px 0;
   color: #333;
-  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: 600;
 }
 
-.options-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+.slider-container {
+  width: 100%;
 }
 
-.option-card {
+.slider-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  padding: 20px;
-  border: 2px solid #e9ecef;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  background: white;
+  margin-bottom: 16px;
 }
 
-.option-card:hover {
-  border-color: #667eea;
-  background: #f8f9ff;
-  transform: translateY(-2px);
+.slider-label {
+  font-weight: 500;
+  color: #555;
+  font-size: 14px;
 }
 
-.option-card.selected {
-  border-color: #667eea;
-  background: #f0f2ff;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
-}
-
-.option-icon {
-  font-size: 2rem;
-  margin-right: 20px;
-  flex-shrink: 0;
-}
-
-.option-content {
-  flex: 1;
-}
-
-.option-content h4 {
-  font-size: 1rem;
+.compression-percentage {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
   font-weight: 600;
-  color: #333;
-  margin-bottom: 5px;
+  min-width: 80px;
+  text-align: center;
 }
 
-.option-content p {
-  color: #666;
-  font-size: 0.9rem;
-  margin: 0;
+.slider-wrapper {
+  position: relative;
+  width: 100%;
 }
 
-.option-radio {
-  margin-left: 20px;
-  flex-shrink: 0;
+.compression-slider {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: #e0e0e0;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  transition: all 0.1s ease;
 }
 
-.radio-button {
+.compression-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
   width: 20px;
   height: 20px;
-  border: 2px solid #ddd;
   border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.1s ease;
+}
+
+.compression-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.compression-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.1s ease;
+}
+
+.compression-slider::-moz-range-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.compression-slider::-webkit-slider-track {
+  background: linear-gradient(to right, #e0e0e0 0%, #e0e0e0 100%);
+  border-radius: 3px;
+  height: 6px;
+}
+
+.compression-slider::-moz-range-track {
+  background: linear-gradient(to right, #e0e0e0 0%, #e0e0e0 100%);
+  border-radius: 3px;
+  height: 6px;
+  border: none;
+}
+
+.slider-labels {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
 }
 
-.radio-button.checked {
-  border-color: #667eea;
-  background: #667eea;
+/* Smooth transitions for all interactive elements */
+.compression-slider,
+.compression-slider::-webkit-slider-thumb,
+.compression-slider::-moz-range-thumb {
+  transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.radio-dot {
-  width: 8px;
-  height: 8px;
-  background: white;
-  border-radius: 50%;
+/* Focus states for accessibility */
+.compression-slider:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
+.compression-slider:focus::-webkit-slider-thumb {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+.compression-slider:focus::-moz-range-thumb {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+/* Responsive design */
 @media (max-width: 768px) {
-  .option-card {
-    padding: 15px;
+  .compression-options {
+    padding: 16px;
   }
   
-  .option-icon {
-    font-size: 1.5rem;
-    margin-right: 15px;
+  .slider-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
   
-  .option-content h4 {
-    font-size: 0.9rem;
-  }
-  
-  .option-content p {
-    font-size: 0.8rem;
+  .compression-percentage {
+    width: 100%;
   }
 } 

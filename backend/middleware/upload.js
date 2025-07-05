@@ -30,6 +30,11 @@ const storage = multer.diskStorage({
 
 // File filter function
 const fileFilter = (req, file, cb) => {
+  console.log('=== File Upload Attempt ===');
+  console.log('File name:', file.originalname);
+  console.log('File mimetype:', file.mimetype);
+  console.log('File size:', file.size);
+  
   const allowedMimeTypes = [
     // PDF files
     'application/pdf',
@@ -62,10 +67,13 @@ const fileFilter = (req, file, cb) => {
   ];
 
   if (allowedMimeTypes.includes(file.mimetype)) {
+    console.log('File accepted:', file.originalname);
     cb(null, true);
   } else {
+    console.log('File rejected:', file.originalname, '- mimetype not allowed:', file.mimetype);
     cb(new Error(`File type ${file.mimetype} is not supported`), false);
   }
+  console.log('==========================');
 };
 
 // Create multer instance

@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Header from './components/Header';
 import CompressPDF from './pages/CompressPDF';
+import RepairPDF from './pages/RepairPDF';
+import OCRPDF from './pages/OCRPDF';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import MergePDF from './pages/MergePDF';
@@ -18,6 +20,10 @@ import ExcelToPdf from './pages/ExcelToPdf';
 import HtmlToPdf from './pages/HtmlToPdf';
 import Profile from './pages/Profile';
 import PastPDFs from './pages/PastPDFs';
+import PdfToJpg from './pages/PdfToJpg';
+import PdfToWord from './pages/PdfToWord';
+import PdfToPowerpoint from './pages/PdfToPowerpoint';
+import PdfToExcel from './pages/PdfToExcel';
 import './App.css';
 
 function App() {
@@ -28,6 +34,9 @@ function App() {
           <Header />
           <Routes>
             <Route path="/" element={<CompressPDF />} />
+            <Route path="/compress-pdf" element={<CompressPDF />} />
+            <Route path="/repair-pdf" element={<RepairPDF />} />
+            <Route path="/ocr-pdf" element={<OCRPDF />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/merge-pdf" element={<MergePDF />} />
@@ -43,6 +52,10 @@ function App() {
             <Route path="/html-to-pdf" element={<HtmlToPdf />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/past-pdfs" element={<PastPDFs />} />
+            <Route path="/pdf-to-jpg" element={<PdfToJpg />} />
+            <Route path="/pdf-to-word" element={<PdfToWord />} />
+            <Route path="/pdf-to-powerpoint" element={<PdfToPowerpoint />} />
+            <Route path="/pdf-to-excel" element={<PdfToExcel />} />
           </Routes>
         </div>
       </Router>

@@ -8,7 +8,7 @@ const path = require('path');
 const config = require('../config/config');
 
 // Download endpoint
-router.get('/download/:filename', authenticateToken, async (req, res) => {
+router.get('/download/:filename', async (req, res) => {
   try {
     const filename = req.params.filename;
     const filePath = path.join(config.downloadPath, filename);
@@ -40,9 +40,10 @@ router.get('/download/:filename', authenticateToken, async (req, res) => {
   }
 });
 
-// OPTIMIZE PDF routes
-router.post('/compress', authenticateToken, upload.single('file'), optimizeController.compressPdf);
-router.post('/protect', authenticateToken, upload.single('file'), optimizeController.protectPdf);
-router.post('/repair', authenticateToken, upload.single('file'), optimizeController.repairPdf);
+// OPTIMIZE PDF routes (no authentication required)
+router.post('/compress', upload.single('file'), optimizeController.compressPdf);
+router.post('/protect', upload.single('file'), optimizeController.protectPdf);
+router.post('/repair', upload.single('file'), optimizeController.repairPdf);
+router.post('/ocr', upload.single('file'), optimizeController.ocrPdf);
 
 module.exports = router; 

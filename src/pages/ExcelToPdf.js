@@ -92,12 +92,6 @@ const ExcelToPdf = () => {
     }
   };
 
-  const clearFile = () => {
-    setSelectedFiles([]);
-    setResult(null);
-    setError(null);
-  };
-
   return (
     <div className="excel-to-pdf-main">
       <div className="excel-to-pdf-container">
@@ -115,19 +109,6 @@ const ExcelToPdf = () => {
             title="Upload your Excel spreadsheet and convert it to PDF"
             subtitle="Select .xls, .xlsx, or .csv files"
           />
-          
-          {selectedFiles.length > 0 && (
-            <div className="selected-file">
-              <h3>Selected Spreadsheet</h3>
-              <div className="file-info">
-                <span className="file-name">{selectedFiles[0].name}</span>
-                <span className="file-size">({(selectedFiles[0].size / 1024 / 1024).toFixed(2)} MB)</span>
-              </div>
-              <button onClick={clearFile} className="clear-button">
-                Clear File
-              </button>
-            </div>
-          )}
         </div>
 
         {error && (

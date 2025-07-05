@@ -92,12 +92,6 @@ const WordToPdf = () => {
     }
   };
 
-  const clearFile = () => {
-    setSelectedFiles([]);
-    setResult(null);
-    setError(null);
-  };
-
   return (
     <div className="word-to-pdf-main">
       <div className="word-to-pdf-container">
@@ -115,19 +109,6 @@ const WordToPdf = () => {
             title="Upload your Word document and convert it to PDF"
             subtitle="Select .doc, .docx, or .rtf files"
           />
-          
-          {selectedFiles.length > 0 && (
-            <div className="selected-file">
-              <h3>Selected Document</h3>
-              <div className="file-info">
-                <span className="file-name">{selectedFiles[0].name}</span>
-                <span className="file-size">({(selectedFiles[0].size / 1024 / 1024).toFixed(2)} MB)</span>
-              </div>
-              <button onClick={clearFile} className="clear-button">
-                Clear File
-              </button>
-            </div>
-          )}
         </div>
 
         {error && (

@@ -52,9 +52,9 @@ const Header = () => {
                 <div className="dropdown-section">
                   <h4>Optimize PDF</h4>
                   <ul>
-                    <li><Link to="/">Compress PDF</Link></li>
-                    <li><button type="button" className="dropdown-link">Repair PDF</button></li>
-                    <li><button type="button" className="dropdown-link">OCR PDF</button></li>
+                    <li><Link to="/compress-pdf">Compress PDF</Link></li>
+                    <li><Link to="/repair-pdf">Repair PDF</Link></li>
+                    <li><Link to="/ocr-pdf">OCR PDF</Link></li>
                   </ul>
                 </div>
                 <div className="dropdown-section">
@@ -70,11 +70,10 @@ const Header = () => {
                 <div className="dropdown-section">
                   <h4>Convert from PDF</h4>
                   <ul>
-                    <li><button type="button" className="dropdown-link">PDF to JPG</button></li>
-                    <li><button type="button" className="dropdown-link">PDF to WORD</button></li>
-                    <li><button type="button" className="dropdown-link">PDF to POWERPOINT</button></li>
-                    <li><button type="button" className="dropdown-link">PDF to EXCEL</button></li>
-                    <li><button type="button" className="dropdown-link">PDF to PDF/A</button></li>
+                    <li><Link to="/pdf-to-jpg" className="dropdown-link">PDF to JPG</Link></li>
+                    <li><Link to="/pdf-to-word" className="dropdown-link">PDF to WORD</Link></li>
+                    <li><Link to="/pdf-to-powerpoint" className="dropdown-link">PDF to POWERPOINT</Link></li>
+                    <li><Link to="/pdf-to-excel" className="dropdown-link">PDF to EXCEL</Link></li>
                   </ul>
                 </div>
               </div>

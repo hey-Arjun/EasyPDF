@@ -4,6 +4,8 @@ import FileUpload from '../components/FileUpload';
 import './JpgToPdf.css';
 
 const JpgToPdf = () => {
+  console.log('🎯 JpgToPdf component loaded');
+  
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [result, setResult] = useState(null);
@@ -12,12 +14,32 @@ const JpgToPdf = () => {
   useAuth();
 
   const handleFileSelect = (files) => {
-    // Files are already filtered by the FileUpload component based on accept prop
-    setSelectedFiles(Array.from(files));
+    console.log('🎯 handleFileSelect called with', files.length, 'files');
+    console.log('📋 Files details:', files.map(f => ({ name: f.name, type: f.type, size: f.size })));
+    
+    // Check if files are actually File objects
+    const validFiles = files.filter(file => file instanceof File);
+    console.log('✅ Valid File objects:', validFiles.length);
+    
+    // Always update the state, even if empty (for file removal)
+    setSelectedFiles(Array.from(validFiles));
+    
+    // Only show error if we're trying to add files but none are valid
+    if (files.length > 0 && validFiles.length === 0) {
+      console.error('❌ No valid files found!');
+      setError('No valid files selected. Please try again.');
+      return;
+    }
+    
+    // Clear error when files are removed or valid files are selected
     setError(null);
+    console.log('✅ Files set to state:', validFiles.length, 'files');
   };
 
   const handleConvert = async () => {
+    console.log('🔄 Convert button clicked');
+    console.log('📁 Selected files:', selectedFiles);
+    
     if (selectedFiles.length === 0) {
       setError('Please select at least one image file');
       return;
@@ -30,6 +52,7 @@ const JpgToPdf = () => {
     try {
       const formData = new FormData();
       selectedFiles.forEach(file => {
+        console.log('📎 Adding file to FormData:', file.name, file.type, file.size);
         formData.append('images', file);
       });
 
@@ -38,15 +61,21 @@ const JpgToPdf = () => {
       const token = localStorage.getItem('token');
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
+        console.log('🔑 Token found, adding Authorization header');
+      } else {
+        console.log('⚠️ No token found, proceeding without Authorization');
       }
       
+      console.log('🌐 Making fetch request to /api/convert-to-pdf/jpg-to-pdf');
       const response = await fetch('/api/convert-to-pdf/jpg-to-pdf', {
         method: 'POST',
         headers,
         body: formData
       });
 
+      console.log('📡 Response received:', response.status, response.statusText);
       const data = await response.json();
+      console.log('📄 Response data:', data);
 
       if (data.success) {
         setResult(data.data);
@@ -54,7 +83,7 @@ const JpgToPdf = () => {
         setError(data.message || 'Conversion failed');
       }
     } catch (error) {
-      console.error('JPG to PDF error:', error);
+      console.error('❌ JPG to PDF error:', error);
       setError('Error converting images to PDF. Please try again.');
     } finally {
       setIsProcessing(false);
@@ -94,12 +123,6 @@ const JpgToPdf = () => {
     }
   };
 
-  const clearFiles = () => {
-    setSelectedFiles([]);
-    setResult(null);
-    setError(null);
-  };
-
   return (
     <div className="jpg-to-pdf-main">
       <div className="jpg-to-pdf-container">
@@ -117,23 +140,6 @@ const JpgToPdf = () => {
             title="Upload your images and convert them to PDF"
             subtitle="Select JPG, PNG, or GIF images"
           />
-          
-          {selectedFiles.length > 0 && (
-            <div className="selected-files">
-              <h3>Selected Images ({selectedFiles.length})</h3>
-              <div className="file-list">
-                {selectedFiles.map((file, index) => (
-                  <div key={index} className="file-item">
-                    <span className="file-name">{file.name}</span>
-                    <span className="file-size">({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
-                  </div>
-                ))}
-              </div>
-              <button onClick={clearFiles} className="clear-button">
-                Clear All
-              </button>
-            </div>
-          )}
         </div>
 
         {error && (
