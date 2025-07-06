@@ -15,7 +15,6 @@ router.post('/logout', authController.logout);
 router.post('/refresh-token', authController.refreshToken);
 router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password', authController.resetPassword);
-router.get('/verify-reset-token/:token', authController.verifyResetToken);
 
 // Session-based logout for Google auth
 router.get('/logout', (req, res) => {
@@ -37,7 +36,6 @@ router.get('/logout', (req, res) => {
 // Protected routes (require authentication)
 router.get('/profile', authenticateToken, authController.getProfile);
 router.put('/profile', authenticateToken, authController.updateProfile);
-router.post('/change-password', authenticateToken, authController.changePassword);
 
 // Session-based profile route for Google auth
 router.get('/session-profile', (req, res) => {

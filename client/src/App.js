@@ -28,8 +28,6 @@ import PdfToExcel from './pages/PdfToExcel';
 import Pricing from './pages/Pricing';
 import Business from './pages/Business';
 import Help from './pages/Help';
-import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
 import './App.css';
 
 function App() {
@@ -66,8 +64,6 @@ function App() {
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/business" element={<Business />} />
             <Route path="/help" element={<Help />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
           </Routes>
         </div>
       </Router>
