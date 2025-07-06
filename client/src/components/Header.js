@@ -79,13 +79,13 @@ const Header = () => {
               </div>
             </li>
             <li className="nav-item">
-              <button type="button" className="nav-link">Pricing</button>
+              <Link to="/pricing" className="nav-link">Pricing</Link>
             </li>
             <li className="nav-item">
-              <button type="button" className="nav-link">Business</button>
+              <Link to="/business" className="nav-link">Business</Link>
             </li>
             <li className="nav-item">
-              <button type="button" className="nav-link">Help</button>
+              <Link to="/help" className="nav-link">Help</Link>
             </li>
           </ul>
         </nav>

@@ -25,6 +25,9 @@ import PdfToJpg from './pages/PdfToJpg';
 import PdfToWord from './pages/PdfToWord';
 import PdfToPowerpoint from './pages/PdfToPowerpoint';
 import PdfToExcel from './pages/PdfToExcel';
+import Pricing from './pages/Pricing';
+import Business from './pages/Business';
+import Help from './pages/Help';
 import './App.css';
 
 function App() {
@@ -58,6 +61,9 @@ function App() {
             <Route path="/pdf-to-word" element={<PdfToWord />} />
             <Route path="/pdf-to-powerpoint" element={<PdfToPowerpoint />} />
             <Route path="/pdf-to-excel" element={<PdfToExcel />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/business" element={<Business />} />
+            <Route path="/help" element={<Help />} />
           </Routes>
         </div>
       </Router>
