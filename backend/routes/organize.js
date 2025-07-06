@@ -2,10 +2,53 @@ const express = require('express');
 const router = express.Router();
 const organizeController = require('../controllers/organizeController');
 const { upload } = require('../middleware/upload');
-const { authenticateToken, optionalAuth } = require('../middleware/auth');
+const { authenticateToken } = require('../middleware/auth');
 const fs = require('fs').promises;
 const path = require('path');
 const config = require('../config/config');
+
+// Authentication middleware that works with both token and session
+const authenticateUser = (req, res, next) => {
+  console.log('authenticateUser - req.user:', req.user);
+  console.log('authenticateUser - req.session:', req.session);
+  
+  // Check if user is authenticated via token (JWT)
+  if (req.user && (req.user.id || req.user._id)) {
+    console.log('User authenticated via token');
+    return next();
+  }
+  
+  // Check if user is authenticated via session (Google auth)
+  if (req.user && req.user._id) {
+    console.log('User authenticated via session');
+    return next();
+  }
+  
+  // Check if user is in session but not deserialized
+  if (req.session && req.session.passport && req.session.passport.user) {
+    console.log('User found in session, attempting to deserialize');
+    // Try to manually deserialize the user
+    const User = require('../models/User');
+    User.findById(req.session.passport.user)
+      .then(user => {
+        if (user) {
+          req.user = user;
+          console.log('User deserialized from session:', user);
+          return next();
+        } else {
+          console.log('User not found in database');
+          return next(); // Allow anonymous access
+        }
+      })
+      .catch(err => {
+        console.error('Error deserializing user:', err);
+        return next(); // Allow anonymous access
+      });
+  } else {
+    console.log('No authentication found - allowing anonymous access');
+    return next(); // Allow anonymous access
+  }
+};
 
 // Test endpoint
 router.get('/test', (req, res) => {
@@ -328,11 +371,11 @@ startxref
 });
 
 // ORGANIZE PDF routes - authentication optional
-router.post('/merge', optionalAuth, upload.array('files', 10), organizeController.mergePdf);
-router.post('/split', optionalAuth, upload.single('file'), organizeController.splitPdf);
-router.post('/remove-pages', optionalAuth, upload.single('file'), organizeController.removePages);
-router.post('/extract-pages', optionalAuth, upload.single('file'), organizeController.extractPages);
-router.post('/organize', optionalAuth, upload.single('file'), organizeController.organizePdf);
-router.post('/scan-to-pdf', optionalAuth, upload.array('images', 20), organizeController.scanToPdf);
+router.post('/merge', authenticateUser, upload.array('files', 10), organizeController.mergePdf);
+router.post('/split', authenticateUser, upload.single('file'), organizeController.splitPdf);
+router.post('/remove-pages', authenticateUser, upload.single('file'), organizeController.removePages);
+router.post('/extract-pages', authenticateUser, upload.single('file'), organizeController.extractPages);
+router.post('/organize', authenticateUser, upload.single('file'), organizeController.organizePdf);
+router.post('/scan-to-pdf', authenticateUser, upload.array('images', 20), organizeController.scanToPdf);
 
 module.exports = router; 

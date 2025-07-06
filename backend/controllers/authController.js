@@ -135,6 +135,15 @@ const authController = {
   // User logout
   logout: async (req, res) => {
     try {
+      // Handle session-based logout (for Google auth)
+      if (req.session) {
+        req.session.destroy((err) => {
+          if (err) {
+            console.error('Session destroy error:', err);
+          }
+        });
+      }
+      
       // In a real application, you might want to blacklist the token
       res.status(200).json({
         success: true,

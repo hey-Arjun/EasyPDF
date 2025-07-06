@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import Header from '../components/Header';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Footer from '../components/Footer';
 import './Profile.css';
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, checkSession } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: user?.name || '',
@@ -13,6 +15,28 @@ const Profile = () => {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [authChecking, setAuthChecking] = useState(false);
+
+  // Check for auth success parameter and trigger session check
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    if (urlParams.get('auth') === 'success') {
+      console.log('Auth success detected, checking session...');
+      setAuthChecking(true);
+      checkSession().then(success => {
+        setAuthChecking(false);
+        if (success) {
+          console.log('Session check successful, user authenticated');
+          // Remove the auth parameter from URL and redirect to home
+          window.history.replaceState({}, document.title, '/profile');
+          // Redirect to home page after successful Google auth
+          navigate('/');
+        } else {
+          console.log('Session check failed, user not authenticated');
+        }
+      });
+    }
+  }, [location.search, checkSession, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -27,12 +51,20 @@ const Profile = () => {
     setIsLoading(true);
     
     try {
+      const token = localStorage.getItem('token');
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      
+      // Add Authorization header only if token exists (for regular login users)
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch('/api/auth/profile', {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
+        credentials: 'include', // Include cookies for session-based auth (Google users)
+        headers,
         body: JSON.stringify(formData)
       });
       
@@ -52,14 +84,52 @@ const Profile = () => {
     }
   };
 
+  if (authChecking) {
+    return (
+      <div className="profile-page">
+        <main className="profile-main">
+          <div className="profile-container">
+            <div className="profile-card">
+              <div className="profile-header">
+                <h1>Setting up your account...</h1>
+                <p>Please wait while we complete your Google signup</p>
+              </div>
+              <div className="loading-spinner">
+                <div className="spinner"></div>
+                <p>Redirecting to home page...</p>
+              </div>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   if (!user) {
-    return <div>Loading...</div>;
+    return (
+      <div className="profile-page">
+        <main className="profile-main">
+          <div className="profile-container">
+            <div className="profile-card">
+              <div className="profile-header">
+                <h1>Authentication Required</h1>
+                <p>Please log in to view your profile</p>
+              </div>
+              <div className="auth-actions">
+                <a href="/login" className="login-button">Login</a>
+                <a href="/signup" className="signup-button">Sign Up</a>
+              </div>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
   }
 
   return (
     <div className="profile-page">
-      <Header />
-      
       <main className="profile-main">
         <div className="profile-container">
           <div className="profile-card">

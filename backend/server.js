@@ -5,6 +5,8 @@ const compression = require('compression');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
+const session = require('express-session');
+const passport = require('passport');
 require('dotenv').config();
 
 // Import database connection
@@ -65,6 +67,18 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 // Static files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/downloads', express.static(path.join(__dirname, 'downloads')));
+
+// Session middleware (must be before routes)
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'easypdf_secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: false, httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000 } // 1 week
+}));
+
+// Passport.js initialization
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Health check endpoint
 app.get('/health', (req, res) => {

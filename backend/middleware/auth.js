@@ -6,7 +6,37 @@ const auth = (req, res, next) => {
     // Get token from header
     const authHeader = req.header('Authorization');
     
+    // If no Authorization header, check for session-based authentication
     if (!authHeader) {
+      // Check if user is authenticated via session (Google auth)
+      if (req.session && req.session.passport && req.session.passport.user) {
+        console.log('No JWT token, checking session authentication');
+        // Try to manually deserialize the user
+        const User = require('../models/User');
+        User.findById(req.session.passport.user)
+          .then(user => {
+            if (user) {
+              req.user = user;
+              console.log('User authenticated via session:', user);
+              return next();
+            } else {
+              console.log('User not found in database');
+              return res.status(401).json({
+                success: false,
+                message: 'Authentication required'
+              });
+            }
+          })
+          .catch(err => {
+            console.error('Error deserializing user:', err);
+            return res.status(401).json({
+              success: false,
+              message: 'Authentication required'
+            });
+          });
+        return;
+      }
+      
       return res.status(401).json({
         success: false,
         message: 'No token provided'

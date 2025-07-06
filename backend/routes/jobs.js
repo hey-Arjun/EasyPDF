@@ -3,10 +3,25 @@ const router = express.Router();
 const { authenticateToken } = require('../middleware/auth');
 const Job = require('../models/Job');
 
-// Get user's job history
+
+
+// Get user's job history (supports both token and session auth)
 router.get('/', authenticateToken, async (req, res) => {
-  try {
-    const jobs = await Job.find({ userId: req.user.id })
+      try {
+      console.log('Jobs route - req.user:', req.user);
+      
+      // Get user ID (should be available after authentication middleware)
+      const userId = req.user._id || req.user.id;
+      console.log('Using user ID:', userId);
+      
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: 'User ID not found'
+        });
+      }
+    
+    const jobs = await Job.find({ userId: userId })
       .sort({ createdAt: -1 })
       .limit(50); // Limit to last 50 jobs
 
@@ -27,9 +42,19 @@ router.get('/', authenticateToken, async (req, res) => {
 // Get specific job by ID
 router.get('/:jobId', authenticateToken, async (req, res) => {
   try {
+    // Get user ID (should be available after authentication middleware)
+    const userId = req.user._id || req.user.id;
+    
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'User ID not found'
+      });
+    }
+
     const job = await Job.findOne({ 
       _id: req.params.jobId, 
-      userId: req.user.id 
+      userId: userId 
     });
 
     if (!job) {
@@ -56,9 +81,19 @@ router.get('/:jobId', authenticateToken, async (req, res) => {
 // Delete a job
 router.delete('/:jobId', authenticateToken, async (req, res) => {
   try {
+    // Get user ID (should be available after authentication middleware)
+    const userId = req.user._id || req.user.id;
+    
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'User ID not found'
+      });
+    }
+
     const job = await Job.findOneAndDelete({ 
       _id: req.params.jobId, 
-      userId: req.user.id 
+      userId: userId 
     });
 
     if (!job) {

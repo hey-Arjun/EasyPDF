@@ -201,6 +201,78 @@
   font-weight: 500;
 }
 
+/* Loading spinner styles */
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.loading-spinner .spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(102, 126, 234, 0.2);
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+.loading-spinner p {
+  color: #666;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Auth actions styles */
+.auth-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.auth-actions .login-button,
+.auth-actions .signup-button {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+.auth-actions .login-button {
+  background: #667eea;
+  color: white;
+}
+
+.auth-actions .login-button:hover {
+  background: #5a6fd8;
+  transform: translateY(-2px);
+}
+
+.auth-actions .signup-button {
+  background: white;
+  color: #667eea;
+  border: 2px solid #667eea;
+}
+
+.auth-actions .signup-button:hover {
+  background: #667eea;
+  color: white;
+  transform: translateY(-2px);
+}
+
 @media (max-width: 768px) {
   .profile-main {
     padding: 20px 15px;

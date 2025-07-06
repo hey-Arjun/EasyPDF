@@ -21,7 +21,7 @@ const convertToPdfController = {
     console.log('Request body keys:', Object.keys(req.body || {}));
     console.log('Request files:', req.files ? req.files.length : 'No files');
     console.log('Request file details:', req.files ? req.files.map(f => ({ name: f.originalname, size: f.size, mimetype: f.mimetype })) : 'No files');
-    console.log('User:', req.user ? req.user.id : 'No user');
+    console.log('User:', req.user ? (req.user.id || req.user._id) : 'No user');
     console.log('=====================================');
 
     try {
@@ -64,10 +64,11 @@ const convertToPdfController = {
       let jobId = null;
 
       // Save job to database if user is logged in
-      if (req.user && req.user.id) {
+      if (req.user && (req.user.id || req.user._id)) {
         try {
+          const userId = req.user._id || req.user.id;
           const job = new Job({
-            userId: req.user.id,
+            userId: userId,
             type: 'jpg_to_pdf',
             fileName: fileName,
             originalFiles: req.files.map(f => f.originalname),
@@ -147,10 +148,11 @@ const convertToPdfController = {
       let jobId = null;
 
       // Save job to database if user is logged in
-      if (req.user && req.user.id) {
+      if (req.user && (req.user.id || req.user._id)) {
         try {
+          const userId = req.user._id || req.user.id;
           const job = new Job({
-            userId: req.user.id,
+            userId: userId,
             type: 'word_to_pdf',
             fileName: fileName,
             originalFiles: [req.file.originalname],
@@ -267,10 +269,11 @@ const convertToPdfController = {
       let jobId = null;
 
       // Save job to database if user is logged in
-      if (req.user && req.user.id) {
+      if (req.user && (req.user.id || req.user._id)) {
         try {
+          const userId = req.user._id || req.user.id;
           const job = new Job({
-            userId: req.user.id,
+            userId: userId,
             type: 'powerpoint_to_pdf',
             fileName: fileName,
             originalFiles: [req.file.originalname],
@@ -387,10 +390,11 @@ const convertToPdfController = {
       let jobId = null;
 
       // Save job to database if user is logged in
-      if (req.user && req.user.id) {
+      if (req.user && (req.user.id || req.user._id)) {
         try {
+          const userId = req.user._id || req.user.id;
           const job = new Job({
-            userId: req.user.id,
+            userId: userId,
             type: 'excel_to_pdf',
             fileName: fileName,
             originalFiles: [req.file.originalname],
@@ -468,10 +472,11 @@ const convertToPdfController = {
       let jobId = null;
 
       // Save job to database if user is logged in
-      if (req.user && req.user.id) {
+      if (req.user && (req.user.id || req.user._id)) {
         try {
+          const userId = req.user._id || req.user.id;
           const job = new Job({
-            userId: req.user.id,
+            userId: userId,
             type: 'html_to_pdf',
             fileName: fileName,
             originalFiles: [req.file.originalname],

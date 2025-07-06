@@ -55,20 +55,23 @@ const organizeController = {
         matches: writtenFile.length === mergedPdfBytes.length
       });
 
-      // Save job to MongoDB only if user is logged in
-      let jobId = null;
-      if (req.user && req.user.id) {
-        const job = new Job({
-          userId: req.user.id,
-          type: 'merge',
-          status: 'completed',
-          fileName: path.basename(outputPath),
-          createdAt: new Date(),
-          completedAt: new Date()
-        });
-        await job.save();
-        jobId = job._id;
-        console.log('Job saved for logged-in user:', jobId);
+      // Save job to database if user is logged in
+      if (req.user && (req.user.id || req.user._id)) {
+        const userId = req.user._id || req.user.id;
+        try {
+          const job = new Job({
+            userId: userId,
+            type: 'merge_pdf',
+            fileName: path.basename(outputPath),
+            originalFiles: req.files.map(file => file.originalname),
+            status: 'completed',
+            completedAt: new Date()
+          });
+          await job.save();
+          console.log('Job saved for logged-in user:', job._id);
+        } catch (error) {
+          console.error('Error saving job:', error);
+        }
       } else {
         console.log('No user logged in - job not saved to database');
       }
@@ -78,8 +81,7 @@ const organizeController = {
         message: 'PDFs merged successfully',
         data: {
           downloadUrl: `/api/organize/download/${path.basename(outputPath)}`,
-          fileName: path.basename(outputPath),
-          jobId: jobId
+          fileName: path.basename(outputPath)
         }
       });
     } catch (error) {
@@ -139,20 +141,23 @@ const organizeController = {
         });
       }
 
-      // Save job to MongoDB only if user is logged in
-      let jobId = null;
-      if (req.user && req.user.id) {
-        const job = new Job({
-          userId: req.user.id,
-          type: 'split',
-          status: 'completed',
-          fileName: `split_${splitFiles.length}_files_${Date.now()}.pdf`,
-          createdAt: new Date(),
-          completedAt: new Date()
-        });
-        await job.save();
-        jobId = job._id;
-        console.log('Job saved for logged-in user:', jobId);
+      // Save job to database if user is logged in
+      if (req.user && (req.user.id || req.user._id)) {
+        const userId = req.user._id || req.user.id;
+        try {
+          const job = new Job({
+            userId: userId,
+            type: 'split_pdf',
+            fileName: `split_${path.basename(req.file.originalname, '.pdf')}_${Date.now()}.zip`,
+            originalFiles: [req.file.originalname],
+            status: 'completed',
+            completedAt: new Date()
+          });
+          await job.save();
+          console.log('Job saved for logged-in user:', job._id);
+        } catch (error) {
+          console.error('Error saving job:', error);
+        }
       } else {
         console.log('No user logged in - job not saved to database');
       }
@@ -162,8 +167,7 @@ const organizeController = {
         message: 'PDF split successfully',
         data: {
           downloadUrl: `/api/organize/download/${path.basename(outputPath)}`,
-          fileName: path.basename(outputPath),
-          jobId: jobId
+          fileName: path.basename(outputPath)
         }
       });
     } catch (error) {
@@ -237,20 +241,23 @@ const organizeController = {
 
       console.log('PDF saved:', { outputPath, fileSize: newPdfBytes.length });
 
-      // Save job to MongoDB only if user is logged in
-      let jobId = null;
-      if (req.user && req.user.id) {
-        const job = new Job({
-          userId: req.user.id,
-          type: 'remove_pages',
-          status: 'completed',
-          fileName: path.basename(outputPath),
-          createdAt: new Date(),
-          completedAt: new Date()
-        });
-        await job.save();
-        jobId = job._id;
-        console.log('Job saved for logged-in user:', jobId);
+      // Save job to database if user is logged in
+      if (req.user && (req.user.id || req.user._id)) {
+        const userId = req.user._id || req.user.id;
+        try {
+          const job = new Job({
+            userId: userId,
+            type: 'remove_pages',
+            fileName: path.basename(outputPath),
+            originalFiles: [req.file.originalname],
+            status: 'completed',
+            completedAt: new Date()
+          });
+          await job.save();
+          console.log('Job saved for logged-in user:', job._id);
+        } catch (error) {
+          console.error('Error saving job:', error);
+        }
       } else {
         console.log('No user logged in - job not saved to database');
       }
@@ -260,8 +267,7 @@ const organizeController = {
         message: 'Pages removed successfully',
         data: {
           downloadUrl: `/api/organize/download/${path.basename(outputPath)}`,
-          fileName: path.basename(outputPath),
-          jobId: jobId
+          fileName: path.basename(outputPath)
         }
       });
     } catch (error) {
@@ -306,20 +312,23 @@ const organizeController = {
       const outputPath = path.join(config.downloadPath, `extracted_pages_${Date.now()}.pdf`);
       await fs.writeFile(outputPath, newPdfBytes);
 
-      // Save job to MongoDB only if user is logged in
-      let jobId = null;
-      if (req.user && req.user.id) {
-        const job = new Job({
-          userId: req.user.id,
-          type: 'extract_pages',
-          status: 'completed',
-          fileName: path.basename(outputPath),
-          createdAt: new Date(),
-          completedAt: new Date()
-        });
-        await job.save();
-        jobId = job._id;
-        console.log('Job saved for logged-in user:', jobId);
+      // Save job to database if user is logged in
+      if (req.user && (req.user.id || req.user._id)) {
+        const userId = req.user._id || req.user.id;
+        try {
+          const job = new Job({
+            userId: userId,
+            type: 'extract_pages',
+            fileName: path.basename(outputPath),
+            originalFiles: [req.file.originalname],
+            status: 'completed',
+            completedAt: new Date()
+          });
+          await job.save();
+          console.log('Job saved for logged-in user:', job._id);
+        } catch (error) {
+          console.error('Error saving job:', error);
+        }
       } else {
         console.log('No user logged in - job not saved to database');
       }
@@ -329,8 +338,7 @@ const organizeController = {
         message: 'Pages extracted successfully',
         data: {
           downloadUrl: `/api/organize/download/${path.basename(outputPath)}`,
-          fileName: path.basename(outputPath),
-          jobId: jobId
+          fileName: path.basename(outputPath)
         }
       });
     } catch (error) {
@@ -375,20 +383,23 @@ const organizeController = {
       const outputPath = path.join(config.downloadPath, `organized_${Date.now()}.pdf`);
       await fs.writeFile(outputPath, newPdfBytes);
 
-      // Save job to MongoDB only if user is logged in
-      let jobId = null;
-      if (req.user && req.user.id) {
-        const job = new Job({
-          userId: req.user.id,
-          type: 'organize',
-          status: 'completed',
-          fileName: path.basename(outputPath),
-          createdAt: new Date(),
-          completedAt: new Date()
-        });
-        await job.save();
-        jobId = job._id;
-        console.log('Job saved for logged-in user:', jobId);
+      // Save job to database if user is logged in
+      if (req.user && (req.user.id || req.user._id)) {
+        const userId = req.user._id || req.user.id;
+        try {
+          const job = new Job({
+            userId: userId,
+            type: 'organize_pdf',
+            fileName: path.basename(outputPath),
+            originalFiles: [req.file.originalname],
+            status: 'completed',
+            completedAt: new Date()
+          });
+          await job.save();
+          console.log('Job saved for logged-in user:', job._id);
+        } catch (error) {
+          console.error('Error saving job:', error);
+        }
       } else {
         console.log('No user logged in - job not saved to database');
       }
@@ -398,8 +409,7 @@ const organizeController = {
         message: 'PDF organized successfully',
         data: {
           downloadUrl: `/api/organize/download/${path.basename(outputPath)}`,
-          fileName: path.basename(outputPath),
-          jobId: jobId
+          fileName: path.basename(outputPath)
         }
       });
     } catch (error) {
@@ -448,20 +458,23 @@ const organizeController = {
       const outputPath = path.join(config.downloadPath, `scanned_${Date.now()}.pdf`);
       await fs.writeFile(outputPath, pdfBytes);
 
-      // Save job to MongoDB only if user is logged in
-      let jobId = null;
-      if (req.user && req.user.id) {
-        const job = new Job({
-          userId: req.user.id,
-          type: 'scan_to_pdf',
-          status: 'completed',
-          fileName: path.basename(outputPath),
-          createdAt: new Date(),
-          completedAt: new Date()
-        });
-        await job.save();
-        jobId = job._id;
-        console.log('Job saved for logged-in user:', jobId);
+      // Save job to database if user is logged in
+      if (req.user && (req.user.id || req.user._id)) {
+        const userId = req.user._id || req.user.id;
+        try {
+          const job = new Job({
+            userId: userId,
+            type: 'scan_to_pdf',
+            fileName: path.basename(outputPath),
+            originalFiles: req.files.map(file => file.originalname),
+            status: 'completed',
+            completedAt: new Date()
+          });
+          await job.save();
+          console.log('Job saved for logged-in user:', job._id);
+        } catch (error) {
+          console.error('Error saving job:', error);
+        }
       } else {
         console.log('No user logged in - job not saved to database');
       }
@@ -471,8 +484,7 @@ const organizeController = {
         message: 'Images converted to PDF successfully',
         data: {
           downloadUrl: `/api/organize/download/${path.basename(outputPath)}`,
-          fileName: path.basename(outputPath),
-          jobId: jobId
+          fileName: path.basename(outputPath)
         }
       });
     } catch (error) {

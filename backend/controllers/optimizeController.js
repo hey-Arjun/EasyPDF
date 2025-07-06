@@ -94,6 +94,30 @@ const optimizeController = {
       try {
         const result = await tryCompression(gsCommand);
         
+        let jobId = null;
+        // Save job to database if user is logged in
+        if (req.user && (req.user.id || req.user._id)) {
+          try {
+            const Job = require('../models/Job');
+            const userId = req.user._id || req.user.id;
+            const job = new Job({
+              userId: userId,
+              type: 'compress_pdf',
+              fileName: path.basename(result.outputPath),
+              originalFiles: [req.file.originalname],
+              status: 'completed',
+              completedAt: new Date()
+            });
+            await job.save();
+            jobId = job._id;
+            console.log('Job saved for logged-in user:', jobId);
+          } catch (error) {
+            console.error('Error saving job:', error);
+          }
+        } else {
+          console.log('No user logged in - job not saved to database');
+        }
+        
         res.status(200).json({
           success: true,
           message: 'PDF compressed successfully',
@@ -103,7 +127,8 @@ const optimizeController = {
             originalSizeBytes: result.originalSize,
             compressedSizeBytes: result.compressedSize,
             compressionRatio: `${percentage}%`,
-            actualCompressionRatio: `${result.actualCompressionRatio}%`
+            actualCompressionRatio: `${result.actualCompressionRatio}%`,
+            jobId: jobId
           }
         });
       } catch (error) {
@@ -158,11 +183,12 @@ const optimizeController = {
 
       let jobId = null;
       // Save job to database if user is logged in
-      if (req.user && req.user.id) {
+      if (req.user && (req.user.id || req.user._id)) {
         try {
           const Job = require('../models/Job');
+          const userId = req.user._id || req.user.id;
           const job = new Job({
-            userId: req.user.id,
+            userId: userId,
             type: 'protect_pdf',
             fileName: path.basename(outputPath),
             originalFiles: [req.file.originalname],
@@ -235,11 +261,12 @@ const optimizeController = {
 
       let jobId = null;
       // Save job to database if user is logged in
-      if (req.user && req.user.id) {
+      if (req.user && (req.user.id || req.user._id)) {
         try {
           const Job = require('../models/Job');
+          const userId = req.user._id || req.user.id;
           const job = new Job({
-            userId: req.user.id,
+            userId: userId,
             type: 'repair_pdf',
             fileName: path.basename(outputPath),
             originalFiles: [req.file.originalname],
@@ -319,11 +346,12 @@ const optimizeController = {
 
       let jobId = null;
       // Save job to database if user is logged in
-      if (req.user && req.user.id) {
+      if (req.user && (req.user.id || req.user._id)) {
         try {
           const Job = require('../models/Job');
+          const userId = req.user._id || req.user.id;
           const job = new Job({
-            userId: req.user.id,
+            userId: userId,
             type: 'ocr_pdf',
             fileName: path.basename(outputPath),
             originalFiles: [req.file.originalname],

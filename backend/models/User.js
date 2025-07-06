@@ -17,7 +17,6 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: [true, 'Password is required'],
     minlength: [6, 'Password must be at least 6 characters'],
     select: false
   },
@@ -41,24 +40,37 @@ const userSchema = new mongoose.Schema({
   updatedAt: {
     type: Date,
     default: Date.now
+  },
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
+  provider: {
+    type: String,
+    enum: ['local', 'google'],
+    default: 'local'
   }
 }, {
   timestamps: true
 });
 
-// Hash password before saving
+// Replace the pre('save') hook with one that only enforces password for local users
 userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) {
-    return next();
+  if (this.provider !== 'google') {
+    if (!this.password || this.password.length < 6) {
+      return next(new Error('Password must be at least 6 characters'));
+    }
+    if (this.isModified('password')) {
+      try {
+        const salt = await bcrypt.genSalt(12);
+        this.password = await bcrypt.hash(this.password, salt);
+      } catch (error) {
+        return next(error);
+      }
+    }
   }
-  
-  try {
-    const salt = await bcrypt.genSalt(12);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (error) {
-    next(error);
-  }
+  next();
 });
 
 // Compare password method

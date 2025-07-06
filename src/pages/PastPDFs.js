@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import Header from '../components/Header';
 import Footer from '../components/Footer';
 import './PastPDFs.css';
 
@@ -16,10 +15,17 @@ const PastPDFs = () => {
 
   const fetchPastPDFs = async () => {
     try {
+      const token = localStorage.getItem('token');
+      const headers = {};
+      
+      // Add Authorization header only if token exists (for regular login users)
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch('/api/jobs', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+        credentials: 'include', // Include cookies for session-based auth (Google users)
+        headers
       });
       
       if (response.ok) {
@@ -101,13 +107,18 @@ const PastPDFs = () => {
     try {
       // Get token from localStorage
       const token = localStorage.getItem('token');
+      const headers = {};
+      
+      // Add Authorization header only if token exists (for regular login users)
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
       
       // Make authenticated request to get the file
       const response = await fetch(downloadUrl, {
         method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include', // Include cookies for session-based auth (Google users)
+        headers
       });
 
       if (!response.ok) {
@@ -137,7 +148,6 @@ const PastPDFs = () => {
   if (!user) {
     return (
       <div className="past-pdfs-page">
-        <Header />
         <main className="past-pdfs-main">
           <div className="past-pdfs-container">
             <div className="auth-required">
@@ -158,8 +168,6 @@ const PastPDFs = () => {
 
   return (
     <div className="past-pdfs-page">
-      <Header />
-      
       <main className="past-pdfs-main">
         <div className="past-pdfs-container">
           <div className="past-pdfs-header">
@@ -168,13 +176,6 @@ const PastPDFs = () => {
                 <h1>Past PDFs</h1>
                 <p>View your PDF processing history and download previous files</p>
               </div>
-              <button 
-                onClick={fetchPastPDFs} 
-                className="refresh-button"
-                disabled={loading}
-              >
-                {loading ? '🔄' : '🔄'} Refresh
-              </button>
             </div>
           </div>
 

@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Header from './components/Header';
+import GoogleAuthHandler from './components/GoogleAuthHandler';
 import CompressPDF from './pages/CompressPDF';
 import RepairPDF from './pages/RepairPDF';
 import OCRPDF from './pages/OCRPDF';
@@ -31,6 +32,7 @@ function App() {
     <AuthProvider>
       <Router>
         <div className="App">
+          <GoogleAuthHandler />
           <Header />
           <Routes>
             <Route path="/" element={<CompressPDF />} />
