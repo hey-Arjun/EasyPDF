@@ -32,9 +32,14 @@ npm run dev
 Runs on [http://localhost:5001](http://localhost:5001)
 
 ## Deployment
-- **Frontend:** Deploy `client/` to Vercel
-- **Backend:** Deploy `server/` to Render
-- See `DEPLOYMENT.md` for detailed instructions
+
+### EC2 Deployment (Recommended)
+- **Quick Start**: See `QUICK_START_EC2.md` for fast deployment
+- **Detailed Guide**: See `EC2_DEPLOYMENT.md` for comprehensive instructions
+- **Automated Script**: Use `deploy-ec2.sh` for automated deployment
+
+### Other Platforms
+- See `DEPLOYMENT.md` for alternative deployment options
 
 ## Features
 - PDF conversion (Word, Excel, JPG, PowerPoint, HTML)
@@ -45,7 +50,7 @@ Runs on [http://localhost:5001](http://localhost:5001)
 - File upload/download history
 
 ## Environment Variables
-See `server/env.production.template` and Vercel/Render dashboard for required environment variables.
+See `server/env.production.template` for required environment variables.
 
 ## License
 MIT 
