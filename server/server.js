@@ -95,11 +95,8 @@ app.use('/api/convert-from-pdf', convertFromPdfRoutes);
 app.use('/api/jobs', jobsRoutes);
 
 // 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({ 
-    error: 'Route not found',
-    message: 'The requested endpoint does not exist'
-  });
+app.use((req, res) => {
+  res.status(404).json({ error: 'Route not found', message: 'The requested endpoint does not exist' });
 });
 
 // Error handling middleware
