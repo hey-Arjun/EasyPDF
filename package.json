@@ -1,0 +1,33 @@
+{
+  "name": "easypdf",
+  "version": "1.0.0",
+  "description": "EasyPDF - Complete PDF Processing Solution",
+  "main": "index.js",
+  "scripts": {
+    "install-all": "npm install && cd client && npm install && cd ../server && npm install",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm start",
+    "build": "cd client && npm run build",
+    "start": "cd server && npm start",
+    "setup": "cd server && npm run setup"
+  },
+  "devDependencies": {
+    "concurrently": "^7.6.0"
+  },
+  "keywords": [
+    "pdf",
+    "conversion",
+    "compression",
+    "ocr",
+    "react",
+    "nodejs",
+    "express"
+  ],
+  "author": "EasyPDF Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/easypdf.git"
+  }
+} 
