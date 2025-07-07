@@ -1,0 +1,47 @@
+{
+  "name": "easypdf-server",
+  "version": "1.0.0",
+  "description": "EasyPDF Node.js Backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "setup": "bash database-setup/setup-database.sh"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "multer": "^1.4.5-lts.1",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.0",
+    "mongoose": "^7.0.3",
+    "dotenv": "^16.0.3",
+    "pdf-lib": "^1.17.1",
+    "puppeteer": "^19.7.0",
+    "sharp": "^0.32.0",
+    "tesseract.js": "^4.1.1",
+    "officegen": "^0.6.5",
+    "pdf2pic": "^2.1.4",
+    "gm": "^1.25.0",
+    "passport": "^0.6.0",
+    "passport-google-oauth20": "^2.0.0",
+    "express-session": "^1.17.3",
+    "cookie-parser": "^1.4.6"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "keywords": [
+    "pdf",
+    "conversion",
+    "compression",
+    "ocr",
+    "express",
+    "nodejs"
+  ],
+  "author": "EasyPDF Team",
+  "license": "MIT"
+}
