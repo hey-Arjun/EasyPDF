@@ -154,3 +154,21 @@ package-lock.json
 backend/package.json
 backend/package-lock.json 
 node_modules
+
+# Node modules
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Local env files
+.env
+client/.env
+server/.env
+
+# Uploads and downloads (backend)
+server/uploads/
+server/downloads/
+
+# OS files
+.DS_Store
+Thumbs.db
