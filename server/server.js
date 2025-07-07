@@ -36,14 +36,7 @@ const jobsRoutes = require('./routes/jobs');
 app.use(helmet());
 
 // CORS configuration
-app.use(cors({
-  origin: [
-    process.env.FRONTEND_URL || 'http://localhost:3000',
-    'https://easypdf.vercel.app',
-    'https://easypdf-client.vercel.app'
-  ],
-  credentials: true
-}));
+app.use(cors({ origin: true, credentials: true }));
 
 // Rate limiting
 const limiter = rateLimit({
