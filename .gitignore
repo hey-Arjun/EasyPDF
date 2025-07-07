@@ -140,7 +140,6 @@ backend/database/
 *.xls
 *.xlsx
 *.csv
-*.html
 *.htm
 
 # Keep test files
