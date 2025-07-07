@@ -9,7 +9,10 @@ const User = require('../models/User');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
 // Authentication routes
-router.post('/login', validateLogin, authController.login);
+router.post('/login', validateLogin, (req, res, next) => {
+  console.log('Login route hit');
+  next();
+}, authController.login);
 router.post('/signup', validateSignup, authController.signup);
 router.post('/logout', authController.logout);
 router.post('/refresh-token', authController.refreshToken);

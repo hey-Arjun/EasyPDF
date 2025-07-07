@@ -87,7 +87,7 @@ app.get('/health', (req, res) => {
 });
 
 // API routes
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', require('./routes/auth'));
 app.use('/api/organize', organizeRoutes);
 app.use('/api/optimize', optimizeRoutes);
 app.use('/api/convert-to-pdf', convertToPdfRoutes);
