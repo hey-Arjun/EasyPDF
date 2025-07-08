@@ -55,51 +55,55 @@ router.get('/session-profile', (req, res) => {
 });
 
 // Google OAuth strategy setup
-passport.use(new GoogleStrategy({
-  clientID: config.google.clientID,
-  clientSecret: config.google.clientSecret,
-  callbackURL: config.google.callbackURL
-}, async (accessToken, refreshToken, profile, done) => {
-  try {
-    let user = await User.findOne({ googleId: profile.id });
-    if (!user) {
-      // If user with this Google ID doesn't exist, create one
-      user = await User.create({
-        name: profile.displayName,
-        email: profile.emails[0].value,
-        googleId: profile.id,
-        provider: 'google'
-      });
+if (config.google.clientID && config.google.clientSecret) {
+  passport.use(new GoogleStrategy({
+    clientID: config.google.clientID,
+    clientSecret: config.google.clientSecret,
+    callbackURL: config.google.callbackURL
+  }, async (accessToken, refreshToken, profile, done) => {
+    try {
+      let user = await User.findOne({ googleId: profile.id });
+      if (!user) {
+        // If user with this Google ID doesn't exist, create one
+        user = await User.create({
+          name: profile.displayName,
+          email: profile.emails[0].value,
+          googleId: profile.id,
+          provider: 'google'
+        });
+      }
+      return done(null, user);
+    } catch (err) {
+      return done(err, null);
     }
-    return done(null, user);
-  } catch (err) {
-    return done(err, null);
-  }
-}));
+  }));
 
-passport.serializeUser((user, done) => {
-  done(null, user.id);
-});
+  passport.serializeUser((user, done) => {
+    done(null, user.id);
+  });
 
-passport.deserializeUser(async (id, done) => {
-  try {
-    const user = await User.findById(id);
-    done(null, user);
-  } catch (err) {
-    done(err, null);
-  }
-});
+  passport.deserializeUser(async (id, done) => {
+    try {
+      const user = await User.findById(id);
+      done(null, user);
+    } catch (err) {
+      done(err, null);
+    }
+  });
 
-// Google OAuth routes
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+  // Google OAuth routes
+  router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
-router.get('/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login', session: true }),
-  (req, res) => {
-    // Successful authentication, redirect to frontend profile page with success parameter
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    res.redirect(`${frontendUrl}/profile?auth=success`);
-  }
-);
+  router.get('/google/callback',
+    passport.authenticate('google', { failureRedirect: '/login', session: true }),
+    (req, res) => {
+      // Successful authentication, redirect to frontend profile page with success parameter
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      res.redirect(`${frontendUrl}/profile?auth=success`);
+    }
+  );
+} else {
+  console.log('Google OAuth credentials not configured. Google authentication disabled.');
+}
 
-module.exports = router; 
+export default router; 

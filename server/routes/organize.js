@@ -378,4 +378,4 @@ router.post('/extract-pages', authenticateUser, upload.single('file'), organizeC
 router.post('/organize', authenticateUser, upload.single('file'), organizeController.organizePdf);
 router.post('/scan-to-pdf', authenticateUser, upload.array('images', 20), organizeController.scanToPdf);
 
-module.exports = router; 
+export default router; 

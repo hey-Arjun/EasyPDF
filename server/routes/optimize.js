@@ -89,4 +89,4 @@ router.post('/protect', authenticateUser, upload.single('file'), optimizeControl
 router.post('/repair', authenticateUser, upload.single('file'), optimizeController.repairPdf);
 router.post('/ocr', authenticateUser, upload.single('file'), optimizeController.ocrPdf);
 
-module.exports = router; 
+export default router; 

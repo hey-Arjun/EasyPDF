@@ -4,9 +4,10 @@ const path = require('path');
 const Tesseract = require('tesseract.js');
 const config = require('../config/config');
 const pdfParse = require('pdf-parse');
-const imagemin = require('imagemin');
-const imageminMozjpeg = require('imagemin-mozjpeg');
-const imageminPngquant = require('imagemin-pngquant');
+// Dynamic imports for ESM modules (imagemin and plugins)
+const imagemin = async (...args) => (await import('imagemin')).default(...args);
+const imageminMozjpeg = async (...args) => (await import('imagemin-mozjpeg')).default(...args);
+const imageminPngquant = async (...args) => (await import('imagemin-pngquant')).default(...args);
 const { exec } = require('child_process');
 
 const optimizeController = {
@@ -398,4 +399,4 @@ function formatFileSize(bytes) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
-module.exports = optimizeController; 
+export default optimizeController; 

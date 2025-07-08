@@ -115,4 +115,4 @@ router.post('/pdf-to-powerpoint', authenticateUser, upload.single('file'), conve
 router.post('/pdf-to-excel', authenticateUser, upload.single('file'), convertFromPdfController.pdfToExcel);
 router.post('/pdf-to-pdfa', authenticateUser, upload.single('file'), convertFromPdfController.pdfToPdfA);
 
-module.exports = router; 
+export default router; 

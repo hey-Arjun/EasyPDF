@@ -513,4 +513,4 @@ const convertToPdfController = {
   }
 };
 
-module.exports = convertToPdfController; 
+export default convertToPdfController; 

@@ -1,22 +1,28 @@
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const compression = require('compression');
-const morgan = require('morgan');
-const rateLimit = require('express-rate-limit');
-const path = require('path');
-const session = require('express-session');
-const passport = require('passport');
-require('dotenv').config();
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import compression from 'compression';
+import morgan from 'morgan';
+import rateLimit from 'express-rate-limit';
+import path from 'path';
+import session from 'express-session';
+import passport from 'passport';
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import { fileURLToPath } from 'url';
 
 // Import database connection
-const connectDB = require('./config/database');
+import connectDB from './config/database.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Trust proxy for rate limiting (fixes X-Forwarded-For header issue)
 app.set('trust proxy', 1);
+
+// If you use __dirname or __filename, add this workaround for ESM:
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Connect to MongoDB
 connectDB().catch(err => {
@@ -25,12 +31,12 @@ connectDB().catch(err => {
 });
 
 // Import routes
-const authRoutes = require('./routes/auth');
-const organizeRoutes = require('./routes/organize');
-const optimizeRoutes = require('./routes/optimize');
-const convertToPdfRoutes = require('./routes/convertToPdf');
-const convertFromPdfRoutes = require('./routes/convertFromPdf');
-const jobsRoutes = require('./routes/jobs');
+import authRoutes from './routes/auth.js';
+import organizeRoutes from './routes/organize.js';
+import optimizeRoutes from './routes/optimize.js';
+import convertToPdfRoutes from './routes/convertToPdf.js';
+import convertFromPdfRoutes from './routes/convertFromPdf.js';
+import jobsRoutes from './routes/jobs.js';
 
 // Security middleware
 app.use(helmet());
@@ -87,7 +93,7 @@ app.get('/health', (req, res) => {
 });
 
 // API routes
-app.use('/api/auth', require('./routes/auth'));
+app.use('/api/auth', authRoutes);
 app.use('/api/organize', organizeRoutes);
 app.use('/api/optimize', optimizeRoutes);
 app.use('/api/convert-to-pdf', convertToPdfRoutes);
@@ -116,4 +122,4 @@ app.listen(PORT, () => {
   console.log(`🗄️  MongoDB URI: ${process.env.MONGODB_URI ? 'Configured' : 'NOT CONFIGURED'}`);
 });
 
-module.exports = app; 
+export default app; 

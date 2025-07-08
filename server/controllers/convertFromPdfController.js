@@ -562,4 +562,4 @@ const convertFromPdfController = {
   }
 };
 
-module.exports = convertFromPdfController; 
+export default convertFromPdfController; 
