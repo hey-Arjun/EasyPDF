@@ -63,7 +63,7 @@ const RemovePages = () => {
         headers['Authorization'] = `Bearer ${token}`;
       }
       
-      const response = await fetch('/api/organize/remove-pages', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/organize/remove-pages`, {
         method: 'POST',
         headers,
         body: formData

@@ -10,35 +10,40 @@ const PastPDFs = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchPastPDFs();
+    const fetchFiles = async () => {
+      try {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/jobs`, {
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setJobs(data.jobs || []);
+        } else {
+          console.error('Failed to fetch files');
+        }
+      } catch (error) {
+        console.error('Error fetching files:', error);
+      }
+    };
+
+    fetchFiles();
   }, []);
 
-  const fetchPastPDFs = async () => {
+  const handleDelete = async (fileId) => {
     try {
-      const token = localStorage.getItem('token');
-      const headers = {};
-      
-      // Add Authorization header only if token exists (for regular login users)
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      
-      const response = await fetch('/api/jobs', {
-        credentials: 'include', // Include cookies for session-based auth (Google users)
-        headers
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/jobs/${fileId}`, {
+        method: 'DELETE',
+        credentials: 'include'
       });
-      
+
       if (response.ok) {
-        const data = await response.json();
-        setJobs(data.data || []);
+        setJobs(jobs.filter(file => file._id !== fileId));
       } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'Failed to load PDF history');
+        console.error('Failed to delete file');
       }
-    } catch (err) {
-      setError('Network error. Please try again.');
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.error('Error deleting file:', error);
     }
   };
 
@@ -241,7 +246,7 @@ const PastPDFs = () => {
                   {job.status === 'completed' && job.fileName && (
                     <div className="job-actions">
                       <button
-                        onClick={() => downloadFile(`/api/organize/download/${job.fileName}`, job.fileName)}
+                        onClick={() => downloadFile(`${process.env.REACT_APP_API_URL}/api/organize/download/${job.fileName}`, job.fileName)}
                         className="download-button"
                       >
                         📥 Download File

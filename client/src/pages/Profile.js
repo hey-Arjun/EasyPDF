@@ -61,7 +61,7 @@ const Profile = () => {
         headers['Authorization'] = `Bearer ${token}`;
       }
       
-      const response = await fetch('/api/auth/profile', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/profile`, {
         method: 'PUT',
         credentials: 'include', // Include cookies for session-based auth (Google users)
         headers,

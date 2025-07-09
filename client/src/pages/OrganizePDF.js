@@ -43,7 +43,7 @@ const OrganizePDF = () => {
     }
 
     if (!pageOrder.trim()) {
-      setError('Please specify the new page order');
+      setError('Please enter the new page order');
       return;
     }
 
@@ -59,24 +59,22 @@ const OrganizePDF = () => {
       // Get token from localStorage (assuming user is logged in)
       const token = localStorage.getItem('token');
       
-      const response = await fetch('/api/organize/organize', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/organize/reorder`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
+        credentials: 'include',
+        body: formData,
       });
 
-      const data = await response.json();
-
-      if (data.success) {
-        setResult(data.data);
-      } else {
-        setError(data.message || 'Failed to organize PDF');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'PDF organization failed');
       }
+
+      const data = await response.json();
+      setResult(data);
     } catch (error) {
-      console.error('Organize error:', error);
-      setError('An error occurred while organizing PDF');
+      console.error('Organize PDF error:', error);
+      setError(error.message || 'Failed to organize PDF');
     } finally {
       setIsProcessing(false);
     }

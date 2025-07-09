@@ -59,7 +59,7 @@ const ScanToPDF = () => {
       // Get token from localStorage (assuming user is logged in)
       const token = localStorage.getItem('token');
       
-      const response = await fetch('/api/organize/scan-to-pdf', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/organize/scan-to-pdf`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

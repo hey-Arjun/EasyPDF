@@ -23,8 +23,9 @@ const RepairPDF = () => {
       const formData = new FormData();
       formData.append('file', selectedFiles[0]);
 
-      const response = await fetch('/api/optimize/repair', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/optimize/repair`, {
         method: 'POST',
+        credentials: 'include',
         body: formData,
       });
 

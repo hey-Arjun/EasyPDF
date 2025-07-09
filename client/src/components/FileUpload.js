@@ -102,6 +102,29 @@ const FileUpload = ({
     console.log('🖱️ Upload area clicked');
   };
 
+  const uploadFile = async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/upload`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const data = await response.json();
+      return data.filename;
+    } catch (error) {
+      console.error('Upload error:', error);
+      throw error;
+    }
+  };
+
   return (
     <div className="file-upload">
       <div className="upload-header">

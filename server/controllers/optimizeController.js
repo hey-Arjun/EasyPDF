@@ -3,12 +3,12 @@ import fs from 'fs/promises';
 import path from 'path';
 import Tesseract from 'tesseract.js';
 import config from '../config/config.js';
-import pdfParse from 'pdf-parse';
+// import pdfParse from 'pdf-parse'; // Commented out due to ESM compatibility issues
+import { exec } from 'child_process';
 // Dynamic imports for imagemin and plugins (keep as is)
 const imagemin = async (...args) => (await import('imagemin')).default(...args);
 const imageminMozjpeg = async (...args) => (await import('imagemin-mozjpeg')).default(...args);
 const imageminPngquant = async (...args) => (await import('imagemin-pngquant')).default(...args);
-const { exec } = require('child_process');
 
 const optimizeController = {
   // Compress PDF using Ghostscript with intelligent compression
@@ -99,7 +99,7 @@ const optimizeController = {
         // Save job to database if user is logged in
         if (req.user && (req.user.id || req.user._id)) {
           try {
-            const Job = require('../models/Job');
+            const Job = (await import('../models/Job.js')).default;
             const userId = req.user._id || req.user.id;
             const job = new Job({
               userId: userId,
@@ -186,7 +186,7 @@ const optimizeController = {
       // Save job to database if user is logged in
       if (req.user && (req.user.id || req.user._id)) {
         try {
-          const Job = require('../models/Job');
+          const Job = (await import('../models/Job.js')).default;
           const userId = req.user._id || req.user.id;
           const job = new Job({
             userId: userId,
@@ -264,7 +264,7 @@ const optimizeController = {
       // Save job to database if user is logged in
       if (req.user && (req.user.id || req.user._id)) {
         try {
-          const Job = require('../models/Job');
+          const Job = (await import('../models/Job.js')).default;
           const userId = req.user._id || req.user.id;
           const job = new Job({
             userId: userId,
@@ -349,7 +349,7 @@ const optimizeController = {
       // Save job to database if user is logged in
       if (req.user && (req.user.id || req.user._id)) {
         try {
-          const Job = require('../models/Job');
+          const Job = (await import('../models/Job.js')).default;
           const userId = req.user._id || req.user.id;
           const job = new Job({
             userId: userId,

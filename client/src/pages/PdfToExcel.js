@@ -66,7 +66,7 @@ const PdfToExcel = () => {
       }
       
       console.log('🌐 Making fetch request to /api/convert-from-pdf/pdf-to-excel');
-      const response = await fetch('/api/convert-from-pdf/pdf-to-excel', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/convert-from-pdf/pdf-to-excel`, {
         method: 'POST',
         headers,
         body: formData

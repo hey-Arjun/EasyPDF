@@ -23,13 +23,15 @@ const OCRPDF = () => {
       const formData = new FormData();
       formData.append('file', selectedFiles[0]);
 
-      const response = await fetch('/api/optimize/ocr', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/optimize/ocr`, {
         method: 'POST',
+        credentials: 'include',
         body: formData,
       });
 
       if (!response.ok) {
-        throw new Error('OCR processing failed');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'OCR processing failed');
       }
 
       const result = await response.json();

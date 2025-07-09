@@ -15,47 +15,28 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in on app start
-    const token = localStorage.getItem('token');
-    const userData = localStorage.getItem('user');
-    if (token && userData) {
+    const checkAuthStatus = async () => {
       try {
-        setUser(JSON.parse(userData));
-        setLoading(false);
-        return;
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/session-profile`, {
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          const userData = await response.json();
+          setUser(userData.user);
+          setLoading(false); // Changed from setIsAuthenticated to setLoading
+        } else {
+          setUser(null);
+          setLoading(false); // Changed from setIsAuthenticated to setLoading
+        }
       } catch (error) {
-        console.error('Error parsing user data:', error);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-      }
-    }
-    
-    // If no local user, try to fetch from backend (for Google login/session)
-    fetch('/api/auth/session-profile', { 
-      credentials: 'include',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      }
-    })
-      .then(res => {
-        if (res.ok) {
-          return res.json();
-        }
-        return null;
-      })
-      .then(data => {
-        if (data && data.email) {
-          setUser(data);
-          // Store user data for consistency
-          localStorage.setItem('user', JSON.stringify(data));
-        }
-        setLoading(false);
-      })
-      .catch((error) => {
         console.error('Error checking auth status:', error);
-        setLoading(false);
-      });
+        setUser(null);
+        setLoading(false); // Changed from setIsAuthenticated to setLoading
+      }
+    };
+
+    checkAuthStatus();
   }, []);
 
   const login = (userData, token) => {
@@ -66,43 +47,34 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      // Try session-based logout first (for Google auth)
-      await fetch('/api/auth/logout', { 
-        method: 'GET',
+      await fetch(`${process.env.REACT_APP_API_URL}/api/auth/logout`, {
+        method: 'POST',
         credentials: 'include'
       });
     } catch (error) {
-      console.error('Session logout error:', error);
+      console.error('Logout error:', error);
+    } finally {
+      setUser(null);
+      setLoading(false); // Changed from setIsAuthenticated to setLoading
     }
-    
-    setUser(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
   };
 
-  const checkSession = async () => {
+  const checkSessionProfile = async () => {
     try {
-      const response = await fetch('/api/auth/session-profile', { 
-        credentials: 'include',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/session-profile`, {
+        credentials: 'include'
       });
       
       if (response.ok) {
-        const data = await response.json();
-        if (data && data.email) {
-          setUser(data);
-          localStorage.setItem('user', JSON.stringify(data));
-          return true;
-        }
+        const userData = await response.json();
+        setUser(userData.user);
+        setLoading(false); // Changed from setIsAuthenticated to setLoading
+        return userData.user;
       }
-      return false;
     } catch (error) {
-      console.error('Session check error:', error);
-      return false;
+      console.error('Error checking session profile:', error);
     }
+    return null;
   };
 
   const value = {
@@ -110,7 +82,7 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     loading,
-    checkSession
+    checkSession: checkSessionProfile // Renamed to avoid conflict with new checkSessionProfile
   };
 
   return (
