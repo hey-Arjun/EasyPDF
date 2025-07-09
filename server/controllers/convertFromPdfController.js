@@ -1,15 +1,15 @@
-const { PDFDocument } = require('pdf-lib');
-const fs = require('fs').promises;
-const path = require('path');
-const puppeteer = require('puppeteer');
-const XLSX = require('xlsx');
-const PptxGenJS = require('pptxgenjs');
-const config = require('../config/config');
-const Job = require('../models/Job');
-const { fromPath } = require('pdf2pic');
-const pdfParse = require('pdf-parse');
-const { Document, Packer, Paragraph, TextRun } = require('docx');
-const pdf_table_extractor = require('pdf-table-extractor');
+import { PDFDocument } from 'pdf-lib';
+import fs from 'fs/promises';
+import path from 'path';
+import puppeteer from 'puppeteer';
+import XLSX from 'xlsx';
+import PptxGenJS from 'pptxgenjs';
+import config from '../config/config.js';
+import Job from '../models/Job.js';
+import { fromPath } from 'pdf2pic';
+import pdfParse from 'pdf-parse';
+import { Document, Packer, Paragraph, TextRun } from 'docx';
+import pdf_table_extractor from 'pdf-table-extractor';
 
 const convertFromPdfController = {
   // Convert PDF to JPG/Images

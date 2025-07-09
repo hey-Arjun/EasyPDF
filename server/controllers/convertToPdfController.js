@@ -1,13 +1,13 @@
-const { PDFDocument } = require('pdf-lib');
-const fs = require('fs').promises;
-const path = require('path');
-const puppeteer = require('puppeteer');
-const mammoth = require('mammoth');
-const XLSX = require('xlsx');
-const libre = require('libreoffice-convert');
-const { promisify } = require('util');
-const config = require('../config/config');
-const Job = require('../models/Job');
+import { PDFDocument } from 'pdf-lib';
+import fs from 'fs/promises';
+import path from 'path';
+import puppeteer from 'puppeteer';
+import mammoth from 'mammoth';
+import XLSX from 'xlsx';
+import libre from 'libreoffice-convert';
+import { promisify } from 'util';
+import config from '../config/config.js';
+import Job from '../models/Job.js';
 
 // Convert libre.convert to use promises
 const libreConvert = promisify(libre.convert);

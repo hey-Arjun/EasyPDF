@@ -1,10 +1,10 @@
-const { PDFDocument } = require('pdf-lib');
-const fs = require('fs').promises;
-const path = require('path');
-const Tesseract = require('tesseract.js');
-const config = require('../config/config');
-const pdfParse = require('pdf-parse');
-// Dynamic imports for ESM modules (imagemin and plugins)
+import { PDFDocument } from 'pdf-lib';
+import fs from 'fs/promises';
+import path from 'path';
+import Tesseract from 'tesseract.js';
+import config from '../config/config.js';
+import pdfParse from 'pdf-parse';
+// Dynamic imports for imagemin and plugins (keep as is)
 const imagemin = async (...args) => (await import('imagemin')).default(...args);
 const imageminMozjpeg = async (...args) => (await import('imagemin-mozjpeg')).default(...args);
 const imageminPngquant = async (...args) => (await import('imagemin-pngquant')).default(...args);

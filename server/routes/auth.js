@@ -1,12 +1,13 @@
-const express = require('express');
+import express from 'express';
+import authController from '../controllers/authController.js';
+import { validateLogin, validateSignup } from '../middleware/validation.js';
+import { authenticateToken } from '../middleware/auth.js';
+import passport from 'passport';
+import config from '../config/config.js';
+import User from '../models/User.js';
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+
 const router = express.Router();
-const authController = require('../controllers/authController');
-const { validateLogin, validateSignup } = require('../middleware/validation');
-const { authenticateToken } = require('../middleware/auth');
-const passport = require('passport');
-const config = require('../config/config');
-const User = require('../models/User');
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
 // Authentication routes
 router.post('/login', validateLogin, (req, res, next) => {

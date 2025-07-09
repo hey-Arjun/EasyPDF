@@ -1,7 +1,9 @@
-require('dotenv').config();
-const path = require('path');
+import dotenv from 'dotenv';
+import path from 'path';
 
-module.exports = {
+dotenv.config();
+
+export default {
   // Server configuration
   port: process.env.PORT || 5000,
   nodeEnv: process.env.NODE_ENV || 'development',
@@ -15,8 +17,8 @@ module.exports = {
   
   // File upload configuration
   uploadMaxSize: process.env.UPLOAD_MAX_SIZE || '50mb',
-  uploadPath: path.join(__dirname, '..', 'uploads'),
-  downloadPath: path.join(__dirname, '..', 'downloads'),
+  uploadPath: path.join(path.dirname(new URL(import.meta.url).pathname), '..', 'uploads'),
+  downloadPath: path.join(path.dirname(new URL(import.meta.url).pathname), '..', 'downloads'),
   
   // Rate limiting
   rateLimitWindowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 900000, // 15 minutes

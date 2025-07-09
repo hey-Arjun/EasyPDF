@@ -1,5 +1,6 @@
-const jwt = require('jsonwebtoken');
-const config = require('../config/config');
+import jwt from 'jsonwebtoken';
+import config from '../config/config.js';
+import User from '../models/User.js';
 
 const auth = (req, res, next) => {
   try {
@@ -12,7 +13,6 @@ const auth = (req, res, next) => {
       if (req.session && req.session.passport && req.session.passport.user) {
         console.log('No JWT token, checking session authentication');
         // Try to manually deserialize the user
-        const User = require('../models/User');
         User.findById(req.session.passport.user)
           .then(user => {
             if (user) {
@@ -137,4 +137,4 @@ const optionalAuth = (req, res, next) => {
   }
 };
 
-module.exports = { authenticateToken: auth, optionalAuth }; 
+export { auth as authenticateToken, optionalAuth }; 

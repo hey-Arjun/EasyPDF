@@ -1,7 +1,7 @@
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-const config = require('../config/config');
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import config from '../config/config.js';
 
 // Ensure upload and download directories exist
 const ensureDirectories = () => {
@@ -119,7 +119,4 @@ const handleUploadError = (error, req, res, next) => {
   next(error);
 };
 
-module.exports = {
-  upload,
-  handleUploadError
-}; 
+export { upload, handleUploadError }; 

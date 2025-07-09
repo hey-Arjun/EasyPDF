@@ -1,9 +1,9 @@
-const { PDFDocument } = require('pdf-lib');
-const fs = require('fs').promises;
-const path = require('path');
-const config = require('../config/config');
-const Job = require('../models/Job');
-const File = require('../models/File');
+import { PDFDocument } from 'pdf-lib';
+import fs from 'fs/promises';
+import path from 'path';
+import config from '../config/config.js';
+import Job from '../models/Job.js';
+import File from '../models/File.js';
 
 // Ensure downloads directory exists
 const ensureDownloadsDir = async () => {
@@ -521,4 +521,4 @@ function parsePageRanges(ranges, totalPages) {
   return result;
 }
 
-module.exports = organizeController; 
+export default organizeController; 
