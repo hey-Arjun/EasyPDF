@@ -14,29 +14,39 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Restore user from localStorage on mount, then validate with backend
   useEffect(() => {
-    const checkAuthStatus = async () => {
+    const restoreUser = async () => {
+      // Try to restore from localStorage first
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          setUser(JSON.parse(storedUser));
+        } catch (e) {
+          setUser(null);
+        }
+      }
+      // Always validate with backend session
       try {
         const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/session-profile`, {
           credentials: 'include'
         });
-        
         if (response.ok) {
           const userData = await response.json();
           setUser(userData.user);
-          setLoading(false); // Changed from setIsAuthenticated to setLoading
+          localStorage.setItem('user', JSON.stringify(userData.user));
         } else {
           setUser(null);
-          setLoading(false); // Changed from setIsAuthenticated to setLoading
+          localStorage.removeItem('user');
         }
       } catch (error) {
         console.error('Error checking auth status:', error);
         setUser(null);
-        setLoading(false); // Changed from setIsAuthenticated to setLoading
+        localStorage.removeItem('user');
       }
+      setLoading(false);
     };
-
-    checkAuthStatus();
+    restoreUser();
   }, []);
 
   const login = (userData, token) => {
@@ -55,7 +65,9 @@ export const AuthProvider = ({ children }) => {
       console.error('Logout error:', error);
     } finally {
       setUser(null);
-      setLoading(false); // Changed from setIsAuthenticated to setLoading
+      setLoading(false);
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
     }
   };
 
@@ -64,16 +76,19 @@ export const AuthProvider = ({ children }) => {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/session-profile`, {
         credentials: 'include'
       });
-      
       if (response.ok) {
         const userData = await response.json();
         setUser(userData.user);
-        setLoading(false); // Changed from setIsAuthenticated to setLoading
+        localStorage.setItem('user', JSON.stringify(userData.user));
+        setLoading(false);
         return userData.user;
       }
     } catch (error) {
       console.error('Error checking session profile:', error);
     }
+    setUser(null);
+    localStorage.removeItem('user');
+    setLoading(false);
     return null;
   };
 
@@ -82,7 +97,7 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     loading,
-    checkSession: checkSessionProfile // Renamed to avoid conflict with new checkSessionProfile
+    checkSession: checkSessionProfile
   };
 
   return (
