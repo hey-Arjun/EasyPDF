@@ -2,10 +2,6 @@ import express from 'express';
 import authController from '../controllers/authController.js';
 import { validateLogin, validateSignup } from '../middleware/validation.js';
 import { authenticateToken } from '../middleware/auth.js';
-import passport from 'passport';
-import config from '../config/config.js';
-import User from '../models/User.js';
-import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 
 const router = express.Router();
 
@@ -36,7 +32,6 @@ router.get('/logout', (req, res) => {
   });
 });
 
-
 // Protected routes (require authentication)
 router.get('/profile', authenticateToken, authController.getProfile);
 router.put('/profile', authenticateToken, authController.updateProfile);
@@ -54,57 +49,5 @@ router.get('/session-profile', (req, res) => {
     res.status(401).json({ error: 'Not authenticated' });
   }
 });
-
-// Google OAuth strategy setup
-if (config.google.clientID && config.google.clientSecret) {
-  passport.use(new GoogleStrategy({
-    clientID: config.google.clientID,
-    clientSecret: config.google.clientSecret,
-    callbackURL: config.google.callbackURL
-  }, async (accessToken, refreshToken, profile, done) => {
-    try {
-      let user = await User.findOne({ googleId: profile.id });
-      if (!user) {
-        // If user with this Google ID doesn't exist, create one
-        user = await User.create({
-          name: profile.displayName,
-          email: profile.emails[0].value,
-          googleId: profile.id,
-          provider: 'google'
-        });
-      }
-      return done(null, user);
-    } catch (err) {
-      return done(err, null);
-    }
-  }));
-
-  passport.serializeUser((user, done) => {
-    done(null, user.id);
-  });
-
-  passport.deserializeUser(async (id, done) => {
-    try {
-      const user = await User.findById(id);
-      done(null, user);
-    } catch (err) {
-      done(err, null);
-    }
-  });
-
-  // Google OAuth routes
-  router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-
-  router.get('/google/callback',
-    passport.authenticate('google', { failureRedirect: '/login', session: true }),
-    (req, res) => {
-      // Successful authentication, redirect to frontend profile page with success parameter
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-      res.redirect(`${frontendUrl}/profile?auth=success`);
-    }
-  );
-} else {
-  console.log('Google OAuth credentials not configured. Google authentication disabled.');
-}
 
 export default router; 

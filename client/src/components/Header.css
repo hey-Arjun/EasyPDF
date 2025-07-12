@@ -411,3 +411,15 @@
 .dropdown-link:hover {
   color: #667eea;
 } 
+
+.mobile-auth-actions {
+  display: none;
+}
+@media (max-width: 768px) {
+  .mobile-auth-actions {
+    display: block;
+    margin-top: 20px;
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+  }
+} 

@@ -87,6 +87,23 @@ const Header = () => {
             <li className="nav-item">
               <Link to="/help" className="nav-link">Help</Link>
             </li>
+            {/* Auth actions for mobile menu */}
+            <li className="nav-item mobile-auth-actions">
+              {user ? (
+                <div className="mobile-account-dropdown">
+                  <Link to="/profile" className="nav-link">Profile</Link>
+                  <Link to="/past-pdfs" className="nav-link">Past PDFs</Link>
+                  <button onClick={handleLogout} className="nav-link" style={{ background: 'none', border: 'none', padding: 0, color: '#dc3545' }}>
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <Link to="/login" className="nav-link">Login</Link>
+                  <Link to="/signup" className="nav-link">Sign up</Link>
+                </>
+              )}
+            </li>
           </ul>
         </nav>
 
