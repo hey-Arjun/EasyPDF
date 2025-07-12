@@ -1,7 +1,7 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const jobSchema = new mongoose.Schema({
-  userId: {
+  user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
@@ -9,7 +9,7 @@ const jobSchema = new mongoose.Schema({
   type: {
     type: String,
     required: true,
-    enum: ['merge', 'split', 'remove_pages', 'extract_pages', 'organize', 'scan_to_pdf', 'compress', 'repair', 'ocr', 'jpg_to_pdf', 'word_to_pdf', 'powerpoint_to_pdf', 'excel_to_pdf', 'html_to_pdf', 'pdf_to_jpg', 'pdf_to_word', 'pdf_to_powerpoint', 'pdf_to_excel', 'pdf_to_pdfa']
+    enum: ['compress', 'merge', 'split', 'convert', 'extract', 'remove', 'organize']
   },
   status: {
     type: String,
@@ -17,27 +17,33 @@ const jobSchema = new mongoose.Schema({
     enum: ['pending', 'processing', 'completed', 'failed'],
     default: 'pending'
   },
-  fileName: {
-    type: String,
-    required: true
+  inputFile: {
+    name: String,
+    size: Number,
+    path: String
   },
-  originalFiles: [{
-    type: String
-  }],
-  createdAt: {
-    type: Date,
-    default: Date.now
+  outputFile: {
+    name: String,
+    size: Number,
+    path: String
   },
-  completedAt: {
-    type: Date
+  progress: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 100
+  },
+  error: String,
+  metadata: {
+    originalSize: Number,
+    compressedSize: Number,
+    compressionRatio: Number,
+    pages: Number
   }
 }, {
   timestamps: true
 });
 
-// Index for better query performance
-jobSchema.index({ userId: 1, createdAt: -1 });
-jobSchema.index({ status: 1, createdAt: -1 });
-jobSchema.index({ type: 1, status: 1 });
+const Job = mongoose.model('Job', jobSchema);
 
-module.exports = mongoose.model('Job', jobSchema); 
+export default Job; 

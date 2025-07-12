@@ -1,119 +1,46 @@
-const express = require('express');
+import express from 'express';
+import { authenticateToken } from '../middleware/auth.js';
+import Job from '../models/Job.js';
+
 const router = express.Router();
-const { authenticateToken } = require('../middleware/auth');
-const Job = require('../models/Job');
 
-
-
-// Get user's job history (supports both token and session auth)
+// Get all jobs for the authenticated user
 router.get('/', authenticateToken, async (req, res) => {
-      try {
-      console.log('Jobs route - req.user:', req.user);
-      
-      // Get user ID (should be available after authentication middleware)
-      const userId = req.user._id || req.user.id;
-      console.log('Using user ID:', userId);
-      
-      if (!userId) {
-        return res.status(401).json({
-          success: false,
-          message: 'User ID not found'
-        });
-      }
-    
-    const jobs = await Job.find({ userId: userId })
-      .sort({ createdAt: -1 })
-      .limit(50); // Limit to last 50 jobs
-
-    res.status(200).json({
-      success: true,
-      message: 'Jobs retrieved successfully',
-      data: jobs
-    });
+  try {
+    const jobs = await Job.find({ user: req.user.id }).sort({ createdAt: -1 });
+    res.json(jobs);
   } catch (error) {
-    console.error('Get jobs error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error retrieving jobs'
-    });
+    console.error('Error fetching jobs:', error);
+    res.status(500).json({ message: 'Error fetching jobs' });
   }
 });
 
-// Get specific job by ID
-router.get('/:jobId', authenticateToken, async (req, res) => {
+// Get a specific job
+router.get('/:id', authenticateToken, async (req, res) => {
   try {
-    // Get user ID (should be available after authentication middleware)
-    const userId = req.user._id || req.user.id;
-    
-    if (!userId) {
-      return res.status(401).json({
-        success: false,
-        message: 'User ID not found'
-      });
-    }
-
-    const job = await Job.findOne({ 
-      _id: req.params.jobId, 
-      userId: userId 
-    });
-
+    const job = await Job.findOne({ _id: req.params.id, user: req.user.id });
     if (!job) {
-      return res.status(404).json({
-        success: false,
-        message: 'Job not found'
-      });
+      return res.status(404).json({ message: 'Job not found' });
     }
-
-    res.status(200).json({
-      success: true,
-      message: 'Job retrieved successfully',
-      data: job
-    });
+    res.json(job);
   } catch (error) {
-    console.error('Get job error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error retrieving job'
-    });
+    console.error('Error fetching job:', error);
+    res.status(500).json({ message: 'Error fetching job' });
   }
 });
 
 // Delete a job
-router.delete('/:jobId', authenticateToken, async (req, res) => {
+router.delete('/:id', authenticateToken, async (req, res) => {
   try {
-    // Get user ID (should be available after authentication middleware)
-    const userId = req.user._id || req.user.id;
-    
-    if (!userId) {
-      return res.status(401).json({
-        success: false,
-        message: 'User ID not found'
-      });
-    }
-
-    const job = await Job.findOneAndDelete({ 
-      _id: req.params.jobId, 
-      userId: userId 
-    });
-
+    const job = await Job.findOneAndDelete({ _id: req.params.id, user: req.user.id });
     if (!job) {
-      return res.status(404).json({
-        success: false,
-        message: 'Job not found'
-      });
+      return res.status(404).json({ message: 'Job not found' });
     }
-
-    res.status(200).json({
-      success: true,
-      message: 'Job deleted successfully'
-    });
+    res.json({ message: 'Job deleted successfully' });
   } catch (error) {
-    console.error('Delete job error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error deleting job'
-    });
+    console.error('Error deleting job:', error);
+    res.status(500).json({ message: 'Error deleting job' });
   }
 });
 
-module.exports = router; 
+export default router; 

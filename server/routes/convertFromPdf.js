@@ -1,11 +1,12 @@
-const express = require('express');
+import express from 'express';
+import convertFromPdfController from '../controllers/convertFromPdfController.js';
+import { upload } from '../middleware/upload.js';
+import { authenticateToken } from '../middleware/auth.js';
+import fs from 'fs/promises';
+import path from 'path';
+import config from '../config/config.js';
+
 const router = express.Router();
-const convertFromPdfController = require('../controllers/convertFromPdfController');
-const { upload } = require('../middleware/upload');
-const { authenticateToken } = require('../middleware/auth');
-const fs = require('fs').promises;
-const path = require('path');
-const config = require('../config/config');
 
 // Authentication middleware that works with both token and session
 const authenticateUser = (req, res, next) => {
@@ -28,22 +29,23 @@ const authenticateUser = (req, res, next) => {
   if (req.session && req.session.passport && req.session.passport.user) {
     console.log('User found in session, attempting to deserialize');
     // Try to manually deserialize the user
-    const User = require('../models/User');
-    User.findById(req.session.passport.user)
-      .then(user => {
-        if (user) {
-          req.user = user;
-          console.log('User deserialized from session:', user);
-          return next();
-        } else {
-          console.log('User not found in database');
+    import('../models/User.js').then(({ default: User }) => {
+      User.findById(req.session.passport.user)
+        .then(user => {
+          if (user) {
+            req.user = user;
+            console.log('User deserialized from session:', user);
+            return next();
+          } else {
+            console.log('User not found in database');
+            return next(); // Allow anonymous access
+          }
+        })
+        .catch(err => {
+          console.error('Error deserializing user:', err);
           return next(); // Allow anonymous access
-        }
-      })
-      .catch(err => {
-        console.error('Error deserializing user:', err);
-        return next(); // Allow anonymous access
-      });
+        });
+    });
   } else {
     console.log('No authentication found - allowing anonymous access');
     return next(); // Allow anonymous access
@@ -66,38 +68,14 @@ router.get('/download/:filename', authenticateUser, async (req, res) => {
       });
     }
 
-    // Determine content type based on file extension
-    const ext = path.extname(filename).toLowerCase();
-    let contentType = 'application/octet-stream';
-    let disposition = 'attachment';
-    
-    if (ext === '.jpg' || ext === '.jpeg') {
-      contentType = 'image/jpeg';
-    } else if (ext === '.png') {
-      contentType = 'image/png';
-    } else if (ext === '.gif') {
-      contentType = 'image/gif';
-    } else if (ext === '.docx') {
-      contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-    } else if (ext === '.xlsx') {
-      contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-    } else if (ext === '.pptx') {
-      contentType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
-    } else if (ext === '.txt') {
-      contentType = 'text/plain';
-    } else if (ext === '.pdf') {
-      contentType = 'application/pdf';
-    } else if (ext === '.zip') {
-      contentType = 'application/zip';
-    }
-
-    // Set proper headers for download
-    res.setHeader('Content-Type', contentType);
-    res.setHeader('Content-Disposition', `${disposition}; filename="${filename}"`);
+    // Set proper headers for file download
+    res.setHeader('Content-Type', 'application/octet-stream');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.setHeader('Cache-Control', 'no-cache');
     
     // Stream the file
-    const fileStream = require('fs').createReadStream(filePath);
+    const { createReadStream } = await import('fs');
+    const fileStream = createReadStream(filePath);
     fileStream.pipe(res);
   } catch (error) {
     console.error('Download error:', error);
@@ -113,6 +91,5 @@ router.post('/pdf-to-jpg', authenticateUser, upload.single('file'), convertFromP
 router.post('/pdf-to-word', authenticateUser, upload.single('file'), convertFromPdfController.pdfToWord);
 router.post('/pdf-to-powerpoint', authenticateUser, upload.single('file'), convertFromPdfController.pdfToPowerpoint);
 router.post('/pdf-to-excel', authenticateUser, upload.single('file'), convertFromPdfController.pdfToExcel);
-router.post('/pdf-to-pdfa', authenticateUser, upload.single('file'), convertFromPdfController.pdfToPdfA);
 
 export default router; 

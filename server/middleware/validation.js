@@ -1,48 +1,50 @@
-const { body, validationResult } = require('express-validator');
+import { body, validationResult } from 'express-validator';
 
-// Validation middleware
-const validate = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({
-      success: false,
-      message: 'Validation failed',
-      errors: errors.array()
-    });
-  }
-  next();
-};
-
-// Login validation
-const validateLogin = [
+export const validateLogin = [
   body('email')
     .isEmail()
-    .withMessage('Please provide a valid email address')
-    .normalizeEmail(),
+    .withMessage('Please enter a valid email address'),
   body('password')
     .isLength({ min: 6 })
     .withMessage('Password must be at least 6 characters long'),
-  validate
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+    next();
+  }
 ];
 
-// Signup validation
-const validateSignup = [
+export const validateSignup = [
   body('name')
     .trim()
-    .isLength({ min: 2, max: 100 })
-    .withMessage('Name must be between 2 and 100 characters')
-    .matches(/^[a-zA-Z\s]+$/)
-    .withMessage('Name can only contain letters and spaces'),
+    .isLength({ min: 2, max: 50 })
+    .withMessage('Name must be between 2 and 50 characters'),
   body('email')
     .isEmail()
-    .withMessage('Please provide a valid email address')
+    .withMessage('Please enter a valid email address')
     .normalizeEmail(),
   body('password')
-    .isLength({ min: 8 })
-    .withMessage('Password must be at least 8 characters long')
+    .isLength({ min: 6 })
+    .withMessage('Password must be at least 6 characters long')
     .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
     .withMessage('Password must contain at least one uppercase letter, one lowercase letter, and one number'),
-  validate
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+    next();
+  }
 ];
 
 // PDF compression validation
@@ -51,7 +53,17 @@ const validateCompression = [
     .optional()
     .isIn(['extreme', 'recommended', 'less'])
     .withMessage('Compression level must be extreme, recommended, or less'),
-  validate
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+    next();
+  }
 ];
 
 // Page range validation
@@ -60,7 +72,17 @@ const validatePageRange = [
     .optional()
     .matches(/^[\d\-\s,]+$/)
     .withMessage('Page ranges must contain only numbers, hyphens, commas, and spaces'),
-  validate
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+    next();
+  }
 ];
 
 // OCR validation
@@ -69,11 +91,20 @@ const validateOcr = [
     .optional()
     .isLength({ min: 2, max: 5 })
     .withMessage('Language code must be between 2 and 5 characters'),
-  validate
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+    next();
+  }
 ];
 
 module.exports = {
-  validate,
   validateLogin,
   validateSignup,
   validateCompression,

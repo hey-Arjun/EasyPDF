@@ -1,7 +1,7 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const fileSchema = new mongoose.Schema({
-  userId: {
+  user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
@@ -10,61 +10,35 @@ const fileSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  storedName: {
-    type: String,
-    required: true,
-    unique: true
-  },
-  filePath: {
+  filename: {
     type: String,
     required: true
   },
-  fileSize: {
+  path: {
+    type: String,
+    required: true
+  },
+  size: {
     type: Number,
     required: true
   },
-  mimeType: {
+  mimetype: {
     type: String,
     required: true
   },
-  uploadDate: {
-    type: Date,
-    default: Date.now
+  jobType: {
+    type: String,
+    required: true
   },
-  isProcessed: {
-    type: Boolean,
-    default: false
-  },
-  isOutputFile: {
-    type: Boolean,
-    default: false
-  },
-  processingJobId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Job'
-  },
-  downloadCount: {
-    type: Number,
-    default: 0
-  },
-  lastDownloaded: {
-    type: Date
-  },
-  isDeleted: {
-    type: Boolean,
-    default: false
-  },
-  deletedAt: {
-    type: Date
+  status: {
+    type: String,
+    enum: ['uploaded', 'processing', 'completed', 'failed'],
+    default: 'uploaded'
   }
 }, {
   timestamps: true
 });
 
-// Index for better query performance
-fileSchema.index({ userId: 1, uploadDate: -1 });
-fileSchema.index({ storedName: 1 });
-fileSchema.index({ isProcessed: 1 });
-fileSchema.index({ processingJobId: 1 });
+const File = mongoose.model('File', fileSchema);
 
-module.exports = mongoose.model('File', fileSchema); 
+export default File; 
