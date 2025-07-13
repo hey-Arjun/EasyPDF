@@ -4,13 +4,9 @@ import { useAuth } from '../context/AuthContext';
 import './Header.css';
 
 const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, logout } = useAuth();
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
 
   const toggleAccountDropdown = () => {
     setIsAccountDropdownOpen(!isAccountDropdownOpen);
@@ -21,16 +17,29 @@ const Header = () => {
     setIsAccountDropdownOpen(false);
   };
 
+  // Mobile hamburger open/close
+  const openMobileMenu = () => setIsMobileMenuOpen(true);
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
+
   return (
     <header className="header">
       <div className="header-container">
+        {/* Logo (always extreme left, first element) */}
         <div className="logo">
           <Link to="/">
             <span className="logo-text">EasyPDF</span>
           </Link>
         </div>
 
-        <nav className={`nav ${isMenuOpen ? 'nav-open' : ''}`}>
+        {/* Hamburger (mobile only, left) */}
+        <button className={`mobile-hamburger${isMobileMenuOpen ? ' hide-when-open' : ''}`} onClick={openMobileMenu} aria-label="Open menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        {/* Desktop Navigation */}
+        <nav className="nav desktop-nav">
           <ul className="nav-list">
             <li className="nav-item dropdown">
               <button className="nav-link" type="button">
@@ -70,10 +79,10 @@ const Header = () => {
                 <div className="dropdown-section">
                   <h4>Convert from PDF</h4>
                   <ul>
-                    <li><Link to="/pdf-to-jpg" className="dropdown-link">PDF to JPG</Link></li>
-                    <li><Link to="/pdf-to-word" className="dropdown-link">PDF to WORD</Link></li>
-                    <li><Link to="/pdf-to-powerpoint" className="dropdown-link">PDF to POWERPOINT</Link></li>
-                    <li><Link to="/pdf-to-excel" className="dropdown-link">PDF to EXCEL</Link></li>
+                    <li><Link to="/pdf-to-jpg">PDF to JPG</Link></li>
+                    <li><Link to="/pdf-to-word">PDF to WORD</Link></li>
+                    <li><Link to="/pdf-to-powerpoint">PDF to POWERPOINT</Link></li>
+                    <li><Link to="/pdf-to-excel">PDF to EXCEL</Link></li>
                   </ul>
                 </div>
               </div>
@@ -87,27 +96,11 @@ const Header = () => {
             <li className="nav-item">
               <Link to="/help" className="nav-link">Help</Link>
             </li>
-            {/* Auth actions for mobile menu */}
-            <li className="nav-item mobile-auth-actions">
-              {user ? (
-                <div className="mobile-account-dropdown">
-                  <Link to="/profile" className="nav-link">Profile</Link>
-                  <Link to="/past-pdfs" className="nav-link">Past PDFs</Link>
-                  <button onClick={handleLogout} className="nav-link" style={{ background: 'none', border: 'none', padding: 0, color: '#dc3545' }}>
-                    Logout
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <Link to="/login" className="nav-link">Login</Link>
-                  <Link to="/signup" className="nav-link">Sign up</Link>
-                </>
-              )}
-            </li>
           </ul>
         </nav>
 
-        <div className="header-actions">
+        {/* Desktop Header Actions: Account dropdown if logged in, else Sign up */}
+        <div className="header-actions desktop-actions">
           {user ? (
             <div className="account-dropdown">
               <button 
@@ -144,19 +137,68 @@ const Header = () => {
               )}
             </div>
           ) : (
-            <>
-              <Link to="/login" className="btn btn-secondary">Login</Link>
-              <Link to="/signup" className="btn btn-primary">Sign up</Link>
-            </>
+            <Link to="/signup" className="btn btn-primary">Sign up</Link>
           )}
         </div>
-
-        <button className="mobile-menu-toggle" onClick={toggleMenu}>
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
       </div>
+
+      {/* Mobile Side Drawer (unchanged) */}
+      {isMobileMenuOpen && (
+        <div className="mobile-drawer-backdrop" onClick={closeMobileMenu}>
+          <nav className="mobile-drawer" onClick={e => e.stopPropagation()}>
+            <button className="mobile-drawer-close" onClick={closeMobileMenu}>&times;</button>
+            <div className="mobile-drawer-section">
+              <div className="mobile-drawer-title">Organize PDF</div>
+              <Link to="/merge-pdf" onClick={closeMobileMenu}>Merge PDF</Link>
+              <Link to="/split-pdf" onClick={closeMobileMenu}>Split PDF</Link>
+              <Link to="/remove-pages" onClick={closeMobileMenu}>Remove pages</Link>
+              <Link to="/extract-pages" onClick={closeMobileMenu}>Extract pages</Link>
+              <Link to="/organize-pdf" onClick={closeMobileMenu}>Organize PDF</Link>
+              <Link to="/scan-to-pdf" onClick={closeMobileMenu}>Scan to PDF</Link>
+            </div>
+            <div className="mobile-drawer-section">
+              <div className="mobile-drawer-title">Optimize PDF</div>
+              <Link to="/compress-pdf" onClick={closeMobileMenu}>Compress PDF</Link>
+              <Link to="/repair-pdf" onClick={closeMobileMenu}>Repair PDF</Link>
+              <Link to="/ocr-pdf" onClick={closeMobileMenu}>OCR PDF</Link>
+            </div>
+            <div className="mobile-drawer-section">
+              <div className="mobile-drawer-title">Convert To PDF</div>
+              <Link to="/jpg-to-pdf" onClick={closeMobileMenu}>JPG to PDF</Link>
+              <Link to="/word-to-pdf" onClick={closeMobileMenu}>Word to PDF</Link>
+              <Link to="/powerpoint-to-pdf" onClick={closeMobileMenu}>PowerPoint to PDF</Link>
+              <Link to="/excel-to-pdf" onClick={closeMobileMenu}>Excel to PDF</Link>
+              <Link to="/html-to-pdf" onClick={closeMobileMenu}>HTML to PDF</Link>
+            </div>
+            <div className="mobile-drawer-section">
+              <div className="mobile-drawer-title">Convert From PDF</div>
+              <Link to="/pdf-to-jpg" onClick={closeMobileMenu}>PDF to JPG</Link>
+              <Link to="/pdf-to-word" onClick={closeMobileMenu}>PDF to Word</Link>
+              <Link to="/pdf-to-powerpoint" onClick={closeMobileMenu}>PDF to PowerPoint</Link>
+              <Link to="/pdf-to-excel" onClick={closeMobileMenu}>PDF to Excel</Link>
+            </div>
+            <div className="mobile-drawer-divider"></div>
+            <div className="mobile-drawer-section">
+              <Link to="/pricing" onClick={closeMobileMenu}>Pricing</Link>
+              <Link to="/business" onClick={closeMobileMenu}>Business</Link>
+              <Link to="/help" onClick={closeMobileMenu}>Help</Link>
+            </div>
+            <div className="mobile-drawer-divider"></div>
+            <div className="mobile-drawer-section">
+              {!user && (
+                <Link to="/signup" className="mobile-drawer-signup" onClick={closeMobileMenu}>Sign up</Link>
+              )}
+              {user && (
+                <>
+                  <Link to="/profile" onClick={closeMobileMenu}>Profile</Link>
+                  <Link to="/past-pdfs" onClick={closeMobileMenu}>Past PDFs</Link>
+                  <button onClick={() => { logout(); closeMobileMenu(); }} className="mobile-drawer-logout">Logout</button>
+                </>
+              )}
+            </div>
+          </nav>
+        </div>
+      )}
     </header>
   );
 };
