@@ -43,4 +43,8 @@ router.delete('/:id', authenticateToken, async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
 export default router; 
+=======
+export default router; 
+>>>>>>> f2fbb8a (Update all files before uploading build)

@@ -17,8 +17,23 @@ const optimizeController = {
       if (!req.file) {
         return res.status(400).json({ success: false, message: 'No file uploaded' });
       }
+
+      // Check if Ghostscript is available
+      const { promisify } = await import('util');
+      const execAsync = promisify(exec);
+      
+      try {
+        await execAsync('which gs');
+      } catch (error) {
+        console.error('Ghostscript not found:', error);
+        return res.status(500).json({ 
+          success: false, 
+          message: 'PDF compression service not available. Ghostscript is not installed.' 
+        });
+      }
+
       const inputPath = req.file.path;
-      const outputPath = path.join(config.downloadPath, `compressed_${Date.now()}.pdf`);
+      let outputPath = path.join(config.downloadPath, `compressed_${Date.now()}.pdf`);
 
       // Get compression level and percentage
       const { compressionLevel = 'recommended', compressionValue = 30 } = req.body;
@@ -45,49 +60,57 @@ const optimizeController = {
       // Try compression with intelligent fallback
       const tryCompression = async (command, attempt = 1) => {
         return new Promise((resolve, reject) => {
-          exec(command, async (error, stdout, stderr) => {
-            if (error) {
-              console.error(`Ghostscript attempt ${attempt} error:`, error, stderr);
-              reject(error);
-              return;
-            }
-            
-            const originalSize = (await fs.stat(inputPath)).size;
-            const compressedSize = (await fs.stat(outputPath)).size;
-            const actualCompressionRatio = ((originalSize - compressedSize) / originalSize * 100).toFixed(2);
-            
-            // If compression made file larger and we haven't tried too many times, try a different approach
-            if (compressedSize > originalSize && attempt < 3) {
-              console.log(`Attempt ${attempt}: File got larger, trying alternative compression...`);
+          execAsync(command).then(async (result) => {
+            try {
+              // Check if output file was created
+              const outputExists = await fs.access(outputPath).then(() => true).catch(() => false);
+              if (!outputExists) {
+                throw new Error('Output file was not created');
+              }
               
-              // Try more aggressive compression for next attempt
-              let fallbackCommand;
-              if (attempt === 1) {
-                // Try with extremely aggressive settings
-                fallbackCommand = `gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/screen -dColorImageDownsampleType=/Subsample -dColorImageResolution=24 -dGrayImageDownsampleType=/Subsample -dGrayImageResolution=24 -dMonoImageDownsampleType=/Subsample -dMonoImageResolution=24 -dEmbedAllFonts=false -dSubsetFonts=true -dOptimize=true -dCompressFonts=true -dDownsampleColorImages=true -dDownsampleGrayImages=true -dDownsampleMonoImages=true -dColorImageFilter=/DCTEncode -dGrayImageFilter=/DCTEncode -dMonoImageFilter=/CCITTFaxEncode -dJPEGQuality=5 -dNOPAUSE -dQUIET -dBATCH -sOutputFile="${outputPath}" "${inputPath}"`;
-              } else {
-                // Try with different output path for last attempt - maximum compression
-                const fallbackOutputPath = path.join(config.downloadPath, `compressed_fallback_${Date.now()}.pdf`);
-                fallbackCommand = `gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/screen -dColorImageDownsampleType=/Subsample -dColorImageResolution=18 -dGrayImageDownsampleType=/Subsample -dGrayImageResolution=18 -dMonoImageDownsampleType=/Subsample -dMonoImageResolution=18 -dEmbedAllFonts=false -dSubsetFonts=true -dOptimize=true -dCompressFonts=true -dDownsampleColorImages=true -dDownsampleGrayImages=true -dDownsampleMonoImages=true -dColorImageFilter=/DCTEncode -dGrayImageFilter=/DCTEncode -dMonoImageFilter=/CCITTFaxEncode -dJPEGQuality=1 -dNOPAUSE -dQUIET -dBATCH -sOutputFile="${fallbackOutputPath}" "${inputPath}"`;
+              const originalSize = (await fs.stat(inputPath)).size;
+              const compressedSize = (await fs.stat(outputPath)).size;
+              const actualCompressionRatio = ((originalSize - compressedSize) / originalSize * 100).toFixed(2);
+              
+              // If compression made file larger and we haven't tried too many times, try a different approach
+              if (compressedSize > originalSize && attempt < 3) {
+                console.log(`Attempt ${attempt}: File got larger, trying alternative compression...`);
                 
-                // Update output path for response
-                outputPath = fallbackOutputPath;
+                // Try more aggressive compression for next attempt
+                let fallbackCommand;
+                if (attempt === 1) {
+                  // Try with extremely aggressive settings
+                  fallbackCommand = `gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/screen -dColorImageDownsampleType=/Subsample -dColorImageResolution=24 -dGrayImageDownsampleType=/Subsample -dGrayImageResolution=24 -dMonoImageDownsampleType=/Subsample -dMonoImageResolution=24 -dEmbedAllFonts=false -dSubsetFonts=true -dOptimize=true -dCompressFonts=true -dDownsampleColorImages=true -dDownsampleGrayImages=true -dDownsampleMonoImages=true -dColorImageFilter=/DCTEncode -dGrayImageFilter=/DCTEncode -dMonoImageFilter=/CCITTFaxEncode -dJPEGQuality=5 -dNOPAUSE -dQUIET -dBATCH -sOutputFile="${outputPath}" "${inputPath}"`;
+                } else {
+                  // Try with different output path for last attempt - maximum compression
+                  const fallbackOutputPath = path.join(config.downloadPath, `compressed_fallback_${Date.now()}.pdf`);
+                  fallbackCommand = `gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/screen -dColorImageDownsampleType=/Subsample -dColorImageResolution=18 -dGrayImageDownsampleType=/Subsample -dGrayImageResolution=18 -dMonoImageDownsampleType=/Subsample -dMonoImageResolution=18 -dEmbedAllFonts=false -dSubsetFonts=true -dOptimize=true -dCompressFonts=true -dDownsampleColorImages=true -dDownsampleGrayImages=true -dDownsampleMonoImages=true -dColorImageFilter=/DCTEncode -dGrayImageFilter=/DCTEncode -dMonoImageFilter=/CCITTFaxEncode -dJPEGQuality=1 -dNOPAUSE -dQUIET -dBATCH -sOutputFile="${fallbackOutputPath}" "${inputPath}"`;
+                  
+                  // Update output path for response
+                  outputPath = fallbackOutputPath;
+                }
+                
+                try {
+                  const result = await tryCompression(fallbackCommand, attempt + 1);
+                  resolve(result);
+                } catch (fallbackError) {
+                  reject(fallbackError);
+                }
+              } else {
+                resolve({
+                  originalSize,
+                  compressedSize,
+                  actualCompressionRatio,
+                  outputPath
+                });
               }
-              
-              try {
-                const result = await tryCompression(fallbackCommand, attempt + 1);
-                resolve(result);
-              } catch (fallbackError) {
-                reject(fallbackError);
-              }
-            } else {
-              resolve({
-                originalSize,
-                compressedSize,
-                actualCompressionRatio,
-                outputPath
-              });
+            } catch (statError) {
+              console.error(`Error checking file stats on attempt ${attempt}:`, statError);
+              reject(statError);
             }
+          }).catch((error) => {
+            console.error(`Ghostscript attempt ${attempt} error:`, error);
+            reject(error);
           });
         });
       };

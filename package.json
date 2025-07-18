@@ -1,8 +1,9 @@
 {
   "name": "easypdf",
   "version": "1.0.0",
+  "type": "module",
   "description": "EasyPDF - Complete PDF Processing Solution",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "install-all": "npm install && cd client && npm install && cd ../server && npm install",
     "dev": "concurrently \"npm run server\" \"npm run client\"",

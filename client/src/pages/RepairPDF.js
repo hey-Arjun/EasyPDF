@@ -23,7 +23,7 @@ const RepairPDF = () => {
       const formData = new FormData();
       formData.append('file', selectedFiles[0]);
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/optimize/repair`, {
+      const response = await fetch('/api/optimize/repair', {
         method: 'POST',
         credentials: 'include',
         body: formData,
@@ -50,8 +50,7 @@ const RepairPDF = () => {
 
   const handleDownload = () => {
     if (!repairResult) return;
-    
-    const downloadUrl = 'http://localhost:5001' + repairResult.downloadUrl;
+    const downloadUrl = process.env.REACT_APP_API_URL + repairResult.downloadUrl;
     const link = document.createElement('a');
     link.href = downloadUrl;
     link.download = repairResult.fileName;

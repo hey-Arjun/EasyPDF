@@ -63,7 +63,7 @@ const ExtractPages = () => {
         headers['Authorization'] = `Bearer ${token}`;
       }
       
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/organize/extract-pages`, {
+      const response = await fetch('/api/organize/extract-pages', {
         method: 'POST',
         headers,
         body: formData

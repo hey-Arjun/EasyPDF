@@ -23,7 +23,7 @@ const OCRPDF = () => {
       const formData = new FormData();
       formData.append('file', selectedFiles[0]);
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/optimize/ocr`, {
+      const response = await fetch('/api/optimize/ocr', {
         method: 'POST',
         credentials: 'include',
         body: formData,
@@ -51,8 +51,7 @@ const OCRPDF = () => {
 
   const handleDownload = () => {
     if (!ocrResult) return;
-    
-    const downloadUrl = 'http://localhost:5001' + ocrResult.downloadUrl;
+    const downloadUrl = process.env.REACT_APP_API_URL + ocrResult.downloadUrl;
     const link = document.createElement('a');
     link.href = downloadUrl;
     link.download = ocrResult.fileName;

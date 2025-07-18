@@ -46,6 +46,7 @@ export const validateSignup = [
     next();
   }
 ];
+<<<<<<< HEAD
 
 // PDF compression validation
 const validateCompression = [
@@ -111,3 +112,5 @@ module.exports = {
   validatePageRange,
   validateOcr
 }; 
+=======
+>>>>>>> f2fbb8a (Update all files before uploading build)

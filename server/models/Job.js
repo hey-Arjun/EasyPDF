@@ -46,4 +46,8 @@ const jobSchema = new mongoose.Schema({
 
 const Job = mongoose.model('Job', jobSchema);
 
+<<<<<<< HEAD
 export default Job; 
+=======
+export default Job; 
+>>>>>>> f2fbb8a (Update all files before uploading build)

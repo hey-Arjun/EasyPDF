@@ -92,4 +92,8 @@ router.post('/split-pdf', authenticateUser, upload.single('file'), organizeContr
 router.post('/extract-pages', authenticateUser, upload.single('file'), organizeController.extractPages);
 router.post('/remove-pages', authenticateUser, upload.single('file'), organizeController.removePages);
 
+<<<<<<< HEAD
 export default router;
+=======
+export default router;
+>>>>>>> f2fbb8a (Update all files before uploading build)

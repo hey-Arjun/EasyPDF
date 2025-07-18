@@ -59,7 +59,7 @@ const OrganizePDF = () => {
       // Get token from localStorage (assuming user is logged in)
       const token = localStorage.getItem('token');
       
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/organize/reorder`, {
+      const response = await fetch('/api/organize/reorder', {
         method: 'POST',
         credentials: 'include',
         body: formData,

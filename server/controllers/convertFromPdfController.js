@@ -2,12 +2,9 @@ import { PDFDocument } from 'pdf-lib';
 import fs from 'fs/promises';
 import path from 'path';
 import puppeteer from 'puppeteer';
-import XLSX from 'xlsx';
-import PptxGenJS from 'pptxgenjs';
 import config from '../config/config.js';
 import Job from '../models/Job.js';
 import { fromPath } from 'pdf2pic';
-import pdfParse from 'pdf-parse';
 import { Document, Packer, Paragraph, TextRun } from 'docx';
 import pdf_table_extractor from 'pdf-table-extractor';
 
@@ -140,11 +137,6 @@ const convertFromPdfController = {
         await job.save();
       }
 
-      const fs = require('fs').promises;
-      const path = require('path');
-      const pdfParse = require('pdf-parse');
-      const { Document, Packer, Paragraph, TextRun } = require('docx');
-
       const pdfBytes = await fs.readFile(req.file.path);
       console.log(`📄 PDF read, size: ${pdfBytes.length} bytes`);
 
@@ -214,16 +206,15 @@ const convertFromPdfController = {
         ],
       });
 
-      console.log('✅ Word document created');
+      // Pack the document
+      const buffer = await Packer.toBuffer(doc);
+      console.log(`📄 Word document created, size: ${buffer.length} bytes`);
 
+      // Save the file
       const outputFileName = `pdf_to_word_${Date.now()}.docx`;
       const outputPath = path.join(config.downloadPath, outputFileName);
-      
-      console.log('📦 Packing Word document...');
-      const buffer = await Packer.toBuffer(doc);
       await fs.writeFile(outputPath, buffer);
-      
-      console.log(`✅ Word document saved: ${outputFileName}, size: ${buffer.length} bytes`);
+      console.log(`💾 Word document saved: ${outputPath}`);
 
       // Update job status if job exists
       if (job) {
@@ -234,11 +225,13 @@ const convertFromPdfController = {
 
       res.status(200).json({
         success: true,
-        message: 'PDF converted to Word document successfully',
+        message: 'PDF converted to Word successfully',
         data: {
           originalFile: req.file.originalname,
           downloadUrl: `/api/convert-from-pdf/download/${outputFileName}`,
           fileName: outputFileName,
+          fileSize: buffer.length,
+          pageCount: pageCount,
           jobId: job ? job._id : null
         }
       });
@@ -257,7 +250,7 @@ const convertFromPdfController = {
     }
   },
 
-  // Convert PDF to PowerPoint (visually identical, each page as image)
+  // Convert PDF to PowerPoint
   pdfToPowerpoint: async (req, res) => {
     let job = null;
     try {
@@ -268,7 +261,7 @@ const convertFromPdfController = {
         });
       }
 
-      console.log('🔄 Starting PDF to PowerPoint (image-based) conversion for file:', req.file.originalname);
+      console.log('🔄 Starting PDF to PowerPoint conversion for file:', req.file.originalname);
 
       // Create job record if user is authenticated
       if (req.user && (req.user.id || req.user._id)) {
@@ -283,65 +276,77 @@ const convertFromPdfController = {
         await job.save();
       }
 
-      const fs = require('fs').promises;
-      const path = require('path');
-      const { fromPath } = require('pdf2pic');
-      const PptxGenJS = require('pptxgenjs');
-      const { PDFDocument } = require('pdf-lib');
-
+      // Convert PDF pages to images first
       const pdfPath = req.file.path;
       const outputDir = config.downloadPath;
+
+      // Get page count using pdf-lib
       const pdfBytes = await fs.readFile(pdfPath);
       const pdfDoc = await PDFDocument.load(pdfBytes);
       const pageCount = pdfDoc.getPageCount();
       console.log(`📄 PDF has ${pageCount} pages`);
 
-      // Convert each PDF page to image
+      // Convert each page to image
       const converter = fromPath(pdfPath, {
         density: 150,
-        saveFilename: `pptx_pdf_page`,
+        saveFilename: "pdf_to_pptx_page",
         savePath: outputDir,
-        format: "png",
-        quality: 100
+        format: "jpg",
+        quality: 80
       });
 
       const imageFiles = [];
       for (let pageNum = 1; pageNum <= pageCount; pageNum++) {
         try {
-          console.log(`🖼️ Converting page ${pageNum} to image...`);
+          console.log(`📄 Converting page ${pageNum} to image`);
           const result = await converter(pageNum);
           imageFiles.push(result.path);
-          console.log(`✅ Page ${pageNum} image: ${result.path}`);
-        } catch (err) {
-          console.error(`❌ Error converting page ${pageNum} to image:`, err);
+          console.log(`✅ Page ${pageNum} converted: ${result.path}`);
+        } catch (pageError) {
+          console.error(`❌ Error converting page ${pageNum}:`, pageError);
         }
       }
 
       // Create PowerPoint presentation
+      console.log('📊 Creating PowerPoint presentation...');
       const pptx = new PptxGenJS();
-      pptx.author = 'EasyPDF Converter';
-      pptx.company = 'EasyPDF';
-      pptx.title = `PDF to PowerPoint: ${req.file.originalname}`;
-      pptx.subject = 'PDF to PowerPoint Conversion (Image-based)';
 
-      // Add each image as a full-slide background
+      // Add slides for each image
       for (let i = 0; i < imageFiles.length; i++) {
         const slide = pptx.addSlide();
-        slide.background = { path: imageFiles[i] };
-        // Optionally, add a small page number label
+        slide.addImage({
+          path: imageFiles[i],
+          x: 0.5,
+          y: 0.5,
+          w: '90%',
+          h: '80%'
+        });
+        
+        // Add slide number
         slide.addText(`Page ${i + 1}`, {
-          x: 0.2,
-          y: 6.7,
-          fontSize: 10,
-          color: '888888',
+          x: 0.5,
+          y: 4.5,
+          w: 1,
+          h: 0.3,
+          fontSize: 12,
+          color: '666666'
         });
       }
 
+      // Save the presentation
       const outputFileName = `pdf_to_powerpoint_${Date.now()}.pptx`;
       const outputPath = path.join(config.downloadPath, outputFileName);
-      console.log('📦 Saving PowerPoint presentation...');
       await pptx.writeFile({ fileName: outputPath });
-      console.log(`✅ PowerPoint saved: ${outputFileName}`);
+      console.log(`💾 PowerPoint saved: ${outputPath}`);
+
+      // Clean up temporary image files
+      for (const imageFile of imageFiles) {
+        try {
+          await fs.unlink(imageFile);
+        } catch (cleanupError) {
+          console.warn('Warning: Could not delete temporary image file:', imageFile);
+        }
+      }
 
       // Update job status if job exists
       if (job) {
@@ -352,16 +357,17 @@ const convertFromPdfController = {
 
       res.status(200).json({
         success: true,
-        message: 'PDF converted to PowerPoint (image-based) successfully',
+        message: 'PDF converted to PowerPoint successfully',
         data: {
           originalFile: req.file.originalname,
           downloadUrl: `/api/convert-from-pdf/download/${outputFileName}`,
           fileName: outputFileName,
+          pageCount: pageCount,
           jobId: job ? job._id : null
         }
       });
     } catch (error) {
-      console.error('❌ PDF to PowerPoint (image-based) error:', error);
+      console.error('❌ PDF to PowerPoint error:', error);
       // Update job status if job exists
       if (job) {
         job.status = 'failed';
@@ -370,12 +376,12 @@ const convertFromPdfController = {
       }
       res.status(500).json({
         success: false,
-        message: 'Error converting PDF to PowerPoint (image-based)'
+        message: 'Error converting PDF to PowerPoint'
       });
     }
   },
 
-  // Convert PDF to Excel (tables only)
+  // Convert PDF to Excel
   pdfToExcel: async (req, res) => {
     let job = null;
     try {
@@ -386,7 +392,7 @@ const convertFromPdfController = {
         });
       }
 
-      console.log('🔄 Starting PDF to Excel (tables only) conversion for file:', req.file.originalname);
+      console.log('🔄 Starting PDF to Excel conversion for file:', req.file.originalname);
 
       // Create job record if user is authenticated
       if (req.user && (req.user.id || req.user._id)) {
@@ -401,56 +407,50 @@ const convertFromPdfController = {
         await job.save();
       }
 
-      const fs = require('fs').promises;
-      const path = require('path');
-      const pdfPath = req.file.path;
-      const outputDir = config.downloadPath;
-
       // Extract tables from PDF
       const extractTables = (pdfPath) => {
         return new Promise((resolve, reject) => {
-          pdf_table_extractor(pdfPath, resolve, reject);
+          pdf_table_extractor(pdfPath, (result) => {
+            if (result.success) {
+              resolve(result.tables);
+            } else {
+              reject(new Error('Failed to extract tables from PDF'));
+            }
+          });
         });
       };
 
-      let tableData;
-      try {
-        tableData = await extractTables(pdfPath);
-      } catch (err) {
-        console.error('❌ Error extracting tables:', err);
-        throw new Error('Failed to extract tables from PDF.');
-      }
+      const tables = await extractTables(req.file.path);
+      console.log(`📊 Extracted ${tables.length} tables from PDF`);
 
-      // Check if any tables were found
-      const allTables = (tableData && tableData.pageTables)
-        ? tableData.pageTables.flatMap(pt => pt.tables)
-        : [];
-
-      if (!allTables.length) {
-        // No tables found, return message
-        console.log('ℹ️ No tables found in PDF. Not creating Excel file.');
-        if (job) {
-          job.status = 'completed';
-          job.completedAt = new Date();
-          await job.save();
-        }
-        return res.status(200).json({
-          success: false,
-          message: 'No tables were found in your PDF, so no Excel file was created.'
-        });
-      }
-
-      // Create Excel workbook from tables
+      // Create Excel workbook
       const workbook = XLSX.utils.book_new();
-      allTables.forEach((table, idx) => {
+
+      // Add each table as a worksheet
+      tables.forEach((table, index) => {
         const worksheet = XLSX.utils.aoa_to_sheet(table);
-        XLSX.utils.book_append_sheet(workbook, worksheet, `Table${idx + 1}`);
+        const sheetName = `Table_${index + 1}`;
+        XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
       });
 
+      // If no tables found, create a sheet with extracted text
+      if (tables.length === 0) {
+        console.log('📝 No tables found, extracting text instead...');
+        const pdfBytes = await fs.readFile(req.file.path);
+        const data = await pdfParse(pdfBytes);
+        const textContent = data.text || 'No text extracted from PDF.';
+        
+        // Split text into lines and create a simple table
+        const textLines = textContent.split('\n').filter(line => line.trim());
+        const worksheet = XLSX.utils.aoa_to_sheet([['Extracted Text'], ...textLines.map(line => [line])]);
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Extracted_Text');
+      }
+
+      // Save the Excel file
       const outputFileName = `pdf_to_excel_${Date.now()}.xlsx`;
-      const outputPath = path.join(outputDir, outputFileName);
+      const outputPath = path.join(config.downloadPath, outputFileName);
       XLSX.writeFile(workbook, outputPath);
-      console.log(`✅ Excel file created: ${outputFileName}`);
+      console.log(`💾 Excel file saved: ${outputPath}`);
 
       // Update job status if job exists
       if (job) {
@@ -461,11 +461,12 @@ const convertFromPdfController = {
 
       res.status(200).json({
         success: true,
-        message: 'PDF tables extracted and saved to Excel successfully',
+        message: 'PDF converted to Excel successfully',
         data: {
           originalFile: req.file.originalname,
           downloadUrl: `/api/convert-from-pdf/download/${outputFileName}`,
           fileName: outputFileName,
+          tableCount: tables.length,
           jobId: job ? job._id : null
         }
       });
@@ -479,7 +480,7 @@ const convertFromPdfController = {
       }
       res.status(500).json({
         success: false,
-        message: 'Error converting PDF to Excel (tables only)'
+        message: 'Error converting PDF to Excel'
       });
     }
   },

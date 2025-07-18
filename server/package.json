@@ -1,7 +1,8 @@
 {
   "name": "easypdf-server",
   "version": "1.0.0",
-  "description": "EasyPDF Node.js Backend",
+  "type": "module",
+  "description": "EasyPDF Backend Server",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

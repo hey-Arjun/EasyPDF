@@ -57,7 +57,7 @@ const MergePDF = () => {
         headers['Authorization'] = `Bearer ${token}`;
       }
       
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/organize/merge`, {
+      const response = await fetch('/api/organize/merge', {
         method: 'POST',
         headers,
         body: formData

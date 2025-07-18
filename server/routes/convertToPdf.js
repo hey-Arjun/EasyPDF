@@ -94,4 +94,8 @@ router.post('/powerpoint-to-pdf', authenticateUser, upload.single('file'), conve
 router.post('/excel-to-pdf', authenticateUser, upload.single('file'), convertToPdfController.excelToPdf);
 router.post('/html-to-pdf', authenticateUser, upload.single('file'), convertToPdfController.htmlToPdf);
 
+<<<<<<< HEAD
 export default router; 
+=======
+export default router;
+>>>>>>> f2fbb8a (Update all files before uploading build)

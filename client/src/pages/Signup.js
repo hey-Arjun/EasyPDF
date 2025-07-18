@@ -82,7 +82,7 @@ const Signup = () => {
     setErrors({});
     try {
       console.log('Sending signup request...');
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/signup`, {
+      const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -248,7 +248,11 @@ const Signup = () => {
             <div className="social-signup">
               <button
                 className="social-button google"
+<<<<<<< HEAD
                 onClick={() => window.location.href = 'http://easypdf.sbs:5001/google'}
+=======
+                onClick={() => window.location.href = '/google'}
+>>>>>>> f2fbb8a (Update all files before uploading build)
               >
                 <svg width="20" height="20" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>

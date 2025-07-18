@@ -63,7 +63,7 @@ const SplitPDF = () => {
         headers['Authorization'] = `Bearer ${token}`;
       }
       
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/organize/split`, {
+      const response = await fetch('/api/organize/split', {
         method: 'POST',
         headers,
         body: formData

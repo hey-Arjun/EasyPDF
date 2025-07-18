@@ -66,7 +66,7 @@ const PdfToJpg = () => {
       }
       
       console.log('🌐 Making fetch request to /api/convert-from-pdf/pdf-to-jpg');
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/convert-from-pdf/pdf-to-jpg`, {
+      const response = await fetch('/api/convert-from-pdf/pdf-to-jpg', {
         method: 'POST',
         headers,
         body: formData

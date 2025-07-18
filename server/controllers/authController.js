@@ -68,32 +68,51 @@ const authController = {
   login: async (req, res) => {
     try {
       const { email, password } = req.body;
+      
+      console.log('Login attempt for email:', email);
 
       // Find user by email and include password for comparison
       const user = await User.findOne({ email }).select('+password');
       if (!user) {
+        console.log('User not found for email:', email);
         return res.status(401).json({
           success: false,
           message: 'Invalid email or password'
         });
       }
 
+      console.log('User found:', { id: user._id, email: user.email, provider: user.provider });
+
       // Check if user is active
       if (!user.isActive) {
+        console.log('User account is deactivated:', user.email);
         return res.status(401).json({
           success: false,
           message: 'Account is deactivated'
         });
       }
 
+      // Check if user has a password (for Google users who don't have passwords)
+      if (!user.password) {
+        console.log('User has no password (likely Google user):', user.email);
+        return res.status(401).json({
+          success: false,
+          message: 'This account was created with Google. Please use Google login.'
+        });
+      }
+
       // Check password
+      console.log('Comparing password for user:', user.email);
       const isPasswordValid = await user.comparePassword(password);
       if (!isPasswordValid) {
+        console.log('Invalid password for user:', user.email);
         return res.status(401).json({
           success: false,
           message: 'Invalid email or password'
         });
       }
+
+      console.log('Password valid, updating last login for user:', user.email);
 
       // Update last login
       await user.updateLastLogin();
@@ -115,6 +134,8 @@ const authController = {
         createdAt: user.createdAt
       };
 
+      console.log('Login successful for user:', user.email);
+
       res.status(200).json({
         success: true,
         message: 'Login successful',
@@ -124,7 +145,11 @@ const authController = {
         }
       });
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Login error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
       res.status(500).json({
         success: false,
         message: 'Internal server error'

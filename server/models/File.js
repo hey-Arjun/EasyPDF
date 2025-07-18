@@ -41,4 +41,8 @@ const fileSchema = new mongoose.Schema({
 
 const File = mongoose.model('File', fileSchema);
 
+<<<<<<< HEAD
 export default File; 
+=======
+export default File; 
+>>>>>>> f2fbb8a (Update all files before uploading build)

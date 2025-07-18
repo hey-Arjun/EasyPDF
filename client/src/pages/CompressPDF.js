@@ -41,7 +41,7 @@ const CompressPDF = () => {
       formData.append('compressionLevel', compressionLevel);
       formData.append('compressionValue', compressionValue);
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/optimize/compress`, {
+      const response = await fetch('/api/optimize/compress', {
         method: 'POST',
         body: formData,
       });
@@ -71,7 +71,7 @@ const CompressPDF = () => {
   const handleDownload = () => {
     if (!compressionResult) return;
     
-    const downloadUrl = 'http://localhost:5001' + compressionResult.downloadUrl;
+    const downloadUrl = process.env.REACT_APP_API_URL + compressionResult.downloadUrl;
     const link = document.createElement('a');
     link.href = downloadUrl;
     link.download = compressionResult.fileName;

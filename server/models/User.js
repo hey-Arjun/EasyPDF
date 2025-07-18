@@ -79,9 +79,15 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
 };
 
 // Update last login
-userSchema.methods.updateLastLogin = function() {
-  this.lastLogin = new Date();
-  return this.save();
+userSchema.methods.updateLastLogin = async function() {
+  try {
+    this.lastLogin = new Date();
+    await this.save();
+    return this;
+  } catch (error) {
+    console.error('Error updating last login:', error);
+    throw error;
+  }
 };
 
 const User = mongoose.model('User', userSchema);

@@ -9,24 +9,29 @@ const PastPDFs = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchFiles = async () => {
-      try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/jobs`, {
-          credentials: 'include'
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          setJobs(data.jobs || []);
-        } else {
-          console.error('Failed to fetch files');
-        }
-      } catch (error) {
-        console.error('Error fetching files:', error);
+  const fetchFiles = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await fetch('/api/jobs', {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setJobs(data.jobs || []);
+      } else {
+        setError('Failed to fetch files');
       }
-    };
+    } catch (error) {
+      console.error('Error fetching files:', error);
+      setError('Error fetching files. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchFiles();
   }, []);
 
@@ -192,7 +197,7 @@ const PastPDFs = () => {
           ) : error ? (
             <div className="error-state">
               <p>{error}</p>
-              <button onClick={fetchPastPDFs} className="retry-button">
+              <button onClick={fetchFiles} className="retry-button">
                 Try Again
               </button>
             </div>

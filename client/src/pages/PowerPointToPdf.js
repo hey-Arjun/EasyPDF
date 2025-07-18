@@ -38,7 +38,7 @@ const PowerPointToPdf = () => {
         headers['Authorization'] = `Bearer ${token}`;
       }
       
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/convert-to-pdf/powerpoint-to-pdf`, {
+      const response = await fetch('/api/convert-to-pdf/powerpoint-to-pdf', {
         method: 'POST',
         headers,
         body: formData

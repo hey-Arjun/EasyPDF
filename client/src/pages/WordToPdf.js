@@ -38,7 +38,7 @@ const WordToPdf = () => {
         headers['Authorization'] = `Bearer ${token}`;
       }
       
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/convert-to-pdf/word-to-pdf`, {
+      const response = await fetch('/api/convert-to-pdf/word-to-pdf', {
         method: 'POST',
         headers,
         body: formData
