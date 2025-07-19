@@ -4,6 +4,9 @@ import path from 'path';
 import config from '../config/config.js';
 import Job from '../models/Job.js';
 import File from '../models/File.js';
+import fs from 'fs';
+import { encryptBuffer } from '../utils/fileEncryption.js';
+
 
 // Ensure downloads directory exists
 const ensureDownloadsDir = async () => {

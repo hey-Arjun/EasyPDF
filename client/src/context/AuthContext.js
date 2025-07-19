@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
       }
       // Always validate with backend session
       try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/session-profile`, {
+        const response = await fetch('/api/auth/session-profile', {
           credentials: 'include'
         });
         if (response.ok) {
@@ -57,7 +57,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await fetch(`${process.env.REACT_APP_API_URL}/api/auth/logout`, {
+      await fetch('/api/auth/logout', {
         method: 'POST',
         credentials: 'include'
       });
@@ -73,7 +73,7 @@ export const AuthProvider = ({ children }) => {
 
   const checkSessionProfile = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/session-profile`, {
+      const response = await fetch('/api/auth/session-profile', {
         credentials: 'include'
       });
       if (response.ok) {
@@ -105,4 +105,4 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
-}; 
+};

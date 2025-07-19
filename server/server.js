@@ -133,7 +133,7 @@ if (config.google.clientID && config.google.clientSecret) {
     (req, res) => {
       // Successful authentication, redirect to frontend profile page with success parameter
       const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-      res.redirect(`${frontendUrl}/profile?auth=success`);
+      res.redirect(`${frontendUrl}/?auth=success`);
     }
   );
 } else {
